@@ -1,0 +1,177 @@
+/* Estilos generales */
+body {
+     background-color:rgba(224, 216, 216, 0.301);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 15px;
+    border: none;
+}
+
+.card-header {
+    border-bottom: 1px solid #f0f0f0;
+    border-radius: 15px 15px 0 0 !important;
+}
+
+/* Botones personalizados */
+.btn-primary-custom {
+    background-color: #f5365c;
+    border-color: #f5365c;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    background-color: #f5365c;
+    border-color: #f5365c;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #f5365c;
+    border-color: #f5365c;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #f5365c;
+    border-color: #f5365c;
+}
+
+/* Tabla de devoluciones */
+.devolucion-item {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.devolucion-item:hover {
+    background-color: #f0f0f0;
+}
+
+.estado-proceso {
+    color: #f5365c;
+    font-weight: 600;
+}
+
+.estado-completada {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Botones de acción en devoluciones */
+.btn-ver-solicitud {
+    background-color: #f5365c;
+    border-color:#f5365c;
+    color: white;
+    font-weight: 500;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+
+.btn-ver-solicitud:hover {
+    background-color:#f5365c;
+    border-color: #f5365c;
+    color: white;
+}
+
+.btn-eliminar {
+    color: #f5365c;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-eliminar:hover {
+    color: #c82333;
+    transform: scale(1.1);
+}
+
+/* Estilos de los input */
+.form-control:focus, .form-select:focus {
+    border-color: black;
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+}
+
+/* Buscador */
+.group {
+  display: flex;
+  line-height: 28px;
+  align-items: center;
+  position: relative;
+  margin-left: 60%;
+  margin-top: 16px;
+}
+
+.input {
+  font-family: "Montserrat", sans-serif;
+  width: 400px;
+  height: 45px;
+  padding-left: 2.5rem;
+  box-shadow: 0 0 25px -11px #0000002f;
+  border: 0;
+  border-radius: 12px;
+  background-color: #fefeff;
+  outline: none;
+  color: #000000;
+  transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+  cursor: text;
+  z-index: 0;
+}
+
+.input::placeholder {
+  color: #bdbecb;
+}
+
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  fill: #bdbecb;
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (max-width: 776px) {
+    .group {
+      float: right;
+      width: 300px;
+    }
+    
+   
+}
+/* Buscador */
+
+.form-check-input:checked {
+    background-color: #f5365c;
+    border-color: #f5365c;
+}
+
+/* Enlace términos y condiciones */
+#enlaceTerminos {
+    color: #f5365c;
+    text-decoration: none;
+}
+
+#enlaceTerminos:hover {
+    text-decoration: underline;
+}
+
+/* Adaptaciones responsivas */
+@media (max-width: 576px) {
+    .devolucion-item {
+        flex-direction: column;
+    }
+    
+    .devolucion-actions {
+        margin-top: 15px;
+        justify-content: flex-start !important;
+    }
+}

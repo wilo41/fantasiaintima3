@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notificaciones</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Iconos -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    }
+    .list-group-item {
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: 0.2s;
+    }
+    .list-group-item:hover {
+      transform: scale(1.01);
+      background: #f1f5f9;
+    }
+    .list-group-item-warning {
+      background: #fff3cd;
+    }
+    .badge {
+      font-size: 0.8rem;
+      padding: 0.5em 0.7em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container mt-5">
+  <div class="card p-4">
+   
+
+     <a style="color: #f5365c; cursor: pointer;" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i> 
+      </a>
+     
+    <br>
+    <h3 class="mb-4"> 
+      <center> 
+        <i class="bi bi-bell-fill" style="color: #f5365c;"></i> Notificaciones
+      </center> 
+    </h3>
+    <ul class="list-group">
+      {% for n in notificaciones %}
+        <li class="list-group-item d-flex justify-content-between align-items-start {% if not n.leida %}list-group-item-warning{% endif %}">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold">{{ n.titulo }}</div>
+            <small>{{ n.mensaje }}</small><br>
+            <small class="text-muted"><i class="bi bi-clock"></i> {{ n.fecha|date:"d/m/Y H:i" }}</small>
+          </div>
+          <div class="text-end">
+            {% if not n.leida %}
+              <span class="badge bg-danger rounded-pill d-block mb-2">Nueva</span>
+              <button class="btn btn-sm btn-outline-success marcar-recibido" data-id="{{ n.id }}">
+                Recibido
+              </button>
+            {% else %}
+              <span class="badge bg-success rounded-pill d-block">Leída</span>
+            {% endif %}
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-center text-muted">
+          <i class="bi bi-inbox"></i> No tienes notificaciones
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- 🔹 Script siempre al final del body -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('.marcar-recibido').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.dataset.id;
+      fetch(`/notificaciones/marcar_leida/${id}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Cambiar estilos en tiempo real
+          const badge = this.previousElementSibling;
+          badge.classList.remove("bg-danger");
+          badge.classList.add("bg-success");
+          badge.textContent = "Leída";
+          this.remove();
+
+          // 🔔 Actualizar contador
+          const bellCounter = document.querySelector(".fa-bell")?.nextElementSibling;
+          if (bellCounter) {
+            bellCounter.textContent = data.pendientes;
+            if (data.pendientes == 0) {
+              bellCounter.remove();
+            }
+          }
+        }
+      })
+    });
+  });
+});
+
+function goBack() {
+  window.history.back();
+}
+</script>
+
+</body>
+</html>

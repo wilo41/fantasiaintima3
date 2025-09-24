@@ -1,0 +1,255 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Contraseña</title>
+    <link rel="stylesheet" href="{% static 'css/nuevaContraseña.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <style>
+        .password-strength {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        .weak { color: #ff4d4d; }
+        .medium { color: #ffcc00; }
+        .strong { color: #00cc44; }
+        .password-requirements {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+        .requirement-met {
+            color: #00cc44;
+        }
+        .messages {
+            margin-bottom: 15px;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .error {
+            background-color: #ffdddd;
+            color: #ff0000;
+        }
+        .success {
+            background-color: #ddffdd;
+            color: #00cc44;
+        }
+        /* Estilos para el contenedor de contraseña */
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+        /* Estilo para el botón de mostrar/ocultar contraseña */
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 16px;
+        }
+        /* Estilo para el icono del ojo */
+        .eye-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <p class="title">Nueva Contraseña</p>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form class="form" id="passwordResetForm" method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <div class="password-container">
+                    <input type="password" id="password" name="password" class="input" placeholder="Nueva Contraseña" autocomplete="new-password" required>
+                    <button type="button" class="toggle-password" toggle="#password" aria-label="Mostrar contraseña">
+                        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <span class="error-message" id="error-password"></span>
+                <div class="password-strength" id="password-strength"></div>
+                <div class="password-requirements" id="password-requirements">
+                    <div id="req-length">- Mínimo 8 caracteres</div>
+                    <div id="req-uppercase">- Al menos una letra mayúscula</div>
+                    <div id="req-lowercase">- Al menos una letra minúscula</div>
+                    <div id="req-number">- Al menos un número</div>
+                    <div id="req-special">- Al menos un carácter especial (!@#$%^&*)</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="password-container">
+                    <input type="password" id="password2" name="password2" class="input" placeholder="Confirmar Contraseña" autocomplete="new-password" required>
+                    <button type="button" class="toggle-password" toggle="#password2" aria-label="Mostrar contraseña">
+                        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <span class="error-message" id="error-password2"></span>
+            </div>
+    
+            <button type="submit" class="form-btn">Cambiar Contraseña</button>
+        </form>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('passwordResetForm');
+        const password = document.getElementById('password');
+        const password2 = document.getElementById('password2');
+        const passwordStrength = document.getElementById('password-strength');
+        
+        // Requisitos de contraseña
+        const reqLength = document.getElementById('req-length');
+        const reqUppercase = document.getElementById('req-uppercase');
+        const reqLowercase = document.getElementById('req-lowercase');
+        const reqNumber = document.getElementById('req-number');
+        const reqSpecial = document.getElementById('req-special');
+
+        // Funcionalidad del toggle de contraseña
+        const toggleButtons = document.querySelectorAll('.toggle-password');
+        
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const inputId = this.getAttribute('toggle');
+                const passwordInput = document.querySelector(inputId);
+                
+                // Cambiar el tipo de input
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    this.innerHTML = `
+                        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    `;
+                } else {
+                    passwordInput.type = 'password';
+                    this.innerHTML = `
+                        <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    `;
+                }
+            });
+        });
+
+        // Validar fortaleza de contraseña
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            
+            // Verificar requisitos
+            const hasLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasLowercase = /[a-z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSpecial = /[!@#$%^&*]/.test(password);
+            const hasNoSpaces = !/\s/.test(password);
+            
+            // Actualizar visualización de requisitos
+            reqLength.className = hasLength ? 'requirement-met' : '';
+            reqUppercase.className = hasUppercase ? 'requirement-met' : '';
+            reqLowercase.className = hasLowercase ? 'requirement-met' : '';
+            reqNumber.className = hasNumber ? 'requirement-met' : '';
+            reqSpecial.className = hasSpecial ? 'requirement-met' : '';
+            
+            // Calcular fortaleza
+            if (hasLength) strength += 1;
+            if (hasUppercase) strength += 1;
+            if (hasLowercase) strength += 1;
+            if (hasNumber) strength += 1;
+            if (hasSpecial) strength += 1;
+            
+            // Mostrar nivel de fortaleza
+            if (strength < 3) {
+                passwordStrength.textContent = 'Contraseña débil';
+                passwordStrength.className = 'password-strength weak';
+                return false;
+            } else if (strength < 5) {
+                passwordStrength.textContent = 'Contraseña media';
+                passwordStrength.className = 'password-strength medium';
+                return false;
+            } else {
+                passwordStrength.textContent = 'Contraseña fuerte';
+                passwordStrength.className = 'password-strength strong';
+                return true;
+            }
+        }
+
+        // Validar que las contraseñas coincidan
+        function checkPasswordsMatch() {
+            const errorMessage = document.getElementById('error-password2');
+            
+            if (password.value !== password2.value) {
+                password2.classList.add('error');
+                errorMessage.textContent = 'Las contraseñas no coinciden.';
+                errorMessage.style.display = 'block';
+                return false;
+            } else {
+                password2.classList.remove('error');
+                errorMessage.style.display = 'none';
+                return true;
+            }
+        }
+        
+        // Validación en tiempo real de la contraseña
+        password.addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+        });
+        
+        // Validar que las contraseñas coincidan en tiempo real
+        password2.addEventListener('input', function() {
+            if (password.value) {
+                checkPasswordsMatch();
+            }
+        });
+        
+        // Al enviar el formulario
+        form.addEventListener('submit', function(e) {
+            const isStrongPassword = checkPasswordStrength(password.value);
+            const passwordsMatch = checkPasswordsMatch();
+            
+            if (!isStrongPassword || !passwordsMatch) {
+                e.preventDefault();
+                
+                if (!isStrongPassword) {
+                    document.getElementById('error-password').textContent = 'La contraseña no cumple con los requisitos mínimos de seguridad.';
+                    document.getElementById('error-password').style.display = 'block';
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html> 

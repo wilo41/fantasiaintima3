@@ -1,0 +1,119 @@
+Fondo del sitio
+body {
+    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #f8f9fa;
+    padding: 10px 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.nav-link {
+    color: #555;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #000;
+}
+
+.navbar .form-control {
+    width: 250px;
+    border-radius: 30px;
+    border: 1px solid #ddd;
+}
+
+.navbar .btn-outline-secondary {
+    border-radius: 50px;
+    padding: 5px 10px;
+    font-size: 1.2rem;
+    color: #666;
+    border: none;
+}
+
+.navbar .btn-outline-secondary:hover {
+    color: #333;
+    background-color: #f2f2f2;
+}
+
+/* Cards de productos */
+.card {
+    width: 100%;
+    margin: 10px 0;
+    box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    border-radius: 10px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-img-top {
+    height: 150px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: #666;
+    text-align: center;
+}
+
+/* Estrellas de calificación */
+.rating input {
+    display: none;
+}
+
+.rating label {
+    float: right;
+    cursor: pointer;
+    font-size: 20px;
+    color: #ccc;
+}
+
+.rating label:before {
+    content: '★';
+}
+
+.rating input:checked ~ label {
+    color: #ffa723;
+}
+
+/* Botón comprar */
+.btn-danger {
+    border-radius: 50px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+
+
+
+

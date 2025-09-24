@@ -1,0 +1,121 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de Sesion</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+
+      .messages {
+        margin-bottom: 15px;
+        margin-top: 10px;
+      }
+
+      .message {
+        background-color: rgba(0, 128, 0, 0.1); /* Verde suave */
+        border: 1px solid green;
+        padding: 10px;
+        border-radius: 8px;
+        color: green;
+        font-weight: bold;
+        text-align: center;
+      }
+      .error {
+        border: 2px solid rgb(255, 0, 0);
+      }
+
+      .error-message {
+        color: red;
+        font-size: 14px;
+        margin-top: -5px;
+        display: none; /* Oculto por defecto */
+      }
+    </style>
+  </head>
+  <body>
+
+  <div class="form-container">
+    <p class="title">Fantasia Intima</p>
+    
+
+    {% if messages %}
+      <div class="messages">
+          {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+              {{ message }}
+          </div>
+          {% endfor %}
+      </div>
+      {% endif %}
+
+    <!-- Formulario de login -->
+    <form class="form" method="post">
+      {% csrf_token %}
+      <input type="email" name="correo" class="input" placeholder="Correo Electrónico" >
+      <span class="error-message" id="error-email"></span>
+
+      <input type="password" name="contrasena" class="input" placeholder="Contraseña" >
+      <span class="error-message" id="error-password"></span>
+
+      <p class="page-link">
+        <a class="page-link-label" href="{% url 'solicitar_recuperacion' %}">¿Olvidaste tu contraseña?</a>
+      </p>
+
+      <button type="submit" class="form-btn">Iniciar sesión</button>
+
+      {% if error %}
+        <p style="color:red;">{{ error }}</p>
+      {% endif %}
+    </form>
+
+    <!-- Enlace para registro -->
+    <p class="sign-up-label">
+      ¿No tienes una cuenta? <a class="sign-up-link" href="{% url 'registro' %}">Regístrate</a>
+    </p>
+    <br>
+
+    <!-- Botón de Google -->
+    <a href="{% url 'social:begin' 'google-oauth2' %}" class="google-login-button" style="display: flex; align-items: center; gap: 8px; background-color:rgba(0, 0, 0, 0.3); color: white; padding: 10px 20px; border-radius: 15px; text-decoration: none;">
+      <svg stroke="currentColor" fill="currentColor" stroke-width="0" version="1.1" x="0px" y="0px" class="google-icon" viewBox="0 0 48 48" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+      </svg>
+      <span>Iniciar sesión con Google</span>
+    </a>
+
+  </div>
+
+{% if bloqueado and tiempo_restante %}
+<script>
+  let tiempo = {{ tiempo_restante }};
+  const mensaje = document.querySelector('.message') || document.querySelector('p[style*="color:red"]');
+
+  function actualizarMensaje() {
+    const minutos = Math.floor(tiempo / 60);
+    const segundos = tiempo % 60;
+    if (mensaje) {
+      mensaje.textContent = `Cuenta bloqueada. Intenta en ${minutos}:${segundos.toString().padStart(2, '0')} minutos.`;
+    }
+
+    tiempo--;
+    if (tiempo >= 0) {
+      setTimeout(actualizarMensaje, 1000);
+    } else {
+      if (mensaje) mensaje.textContent = '';  // Borra mensaje al finalizar
+    }
+  }
+
+  actualizarMensaje();
+</script>
+{% endif %}
+
+  </body>
+</html>

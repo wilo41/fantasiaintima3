@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/codigo.css' %}">
+    <style>
+        
+      .messages .success{
+        color:green;
+        font-size: 18px;
+      }
+        .message {
+        background-color: rgba(0, 128, 0, 0.1); /* Verde suave */
+        border: 1px solid green;
+        padding: 7px;
+        border-radius: 8px;
+        color: green;
+        font-weight: bold;
+        text-align: center;
+      }
+      .messages .error{
+        background-color: rgba(255, 0, 0, 0.1); /* Rojo suave */
+        color:red;
+        font-size: 18px;
+        border: 1px solid red;
+      }
+      
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <p class="title">Ingresa el Codigo de Verificacion</p>
+        <p class="title1"> Comprueba si recibiste un correo electronico con tu codigo de 6 digitos.</p>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form class="form" id="recoverForm" method="post">
+          {% csrf_token %}
+            <div class="otp-inputs">
+                <input type="text" maxlength="1" name="digit1">
+                <input type="text" maxlength="1" name="digit2">
+                <input type="text" maxlength="1" name="digit3">
+                <input type="text" maxlength="1" name="digit4">
+                <input type="text" maxlength="1" name="digit5">
+                <input type="text" maxlength="1" name="digit6">
+              </div>
+
+          <p class="page-link">
+            <a class="page-link-label" href="{% url 'solicitar_recuperacion' %}">Volver a Enviar Codigo</a>
+          </p>
+         
+          <button type="submit" class="form-btn">Verificar Código</button>
+        </form>
+  
+      </div>
+
+
+  
+</body>
+
+<script>
+  const inputs = document.querySelectorAll('.otp-inputs input');
+
+  inputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+          // Eliminar cualquier carácter que no sea número
+          input.value = input.value.replace(/[^0-9]/g, '');
+  
+          // Solo mover el foco si se ingresó un número válido
+          if (input.value.length === 1 && index < inputs.length - 1) {
+              inputs[index + 1].focus();
+          }
+      });
+  
+      input.addEventListener('keydown', (e) => {
+          // Si presiona Backspace y el campo está vacío, mover al anterior
+          if (e.key === 'Backspace' && input.value === '' && index > 0) {
+              inputs[index - 1].focus();
+          }
+      });
+  });
+
+</script>
+</html>

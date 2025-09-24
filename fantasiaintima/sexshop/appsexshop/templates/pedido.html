@@ -1,0 +1,364 @@
+{% load static %}
+{% include 'inc/header.html'%}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pedidos</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/pedido.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <style>
+        .producto-img {
+            max-width: 80px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Barra de Navegación -->
+<nav class="navbar navbar-expand-lg navbar-custom mb-4">
+    <div class="container">
+        <a href="{% url 'Ladingpage' %}"><i class="fa-solid fa-arrow-left"></i></a>
+        <span class="navbar-brand d-none d-lg-block" style="margin-left: -16%;">Gestión de Pedidos</span>
+        <div class="group" id="search-group">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon">
+                <g><path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 
+                4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 
+                11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 
+                7.5-7.5-3.365-7.5-7.5z"></path></g>
+            </svg>
+            <input id="query" class="input" type="search" placeholder="Buscar Pedido" name="searchbar">
+        </div>
+    </div>    
+</nav>
+
+<!-- Contenedor -->
+<div class="container">
+    <h2 class="text-center my-4">Pedidos Realizados</h2>
+
+           {% if pedidos %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show text-center" role="alert">
+          <i class="fas fa-check-circle"></i> {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID Pedido</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for pedido in pedidos %}
+        <tr class="
+            {% if pedido.estado|lower == 'cancelado' %} table-danger
+            {% elif pedido.estado|lower == 'entregado' %} table-success
+            {% elif pedido.estado|lower == 'aprobado' %} 
+            {% elif pedido.estado|lower == 'enviado' %} 
+            {% endif %}
+        ">
+            <td>{{ pedido.codigo_pedido }}</td>
+            <td>{{ pedido.cliente }}</td>
+            <td>{{ pedido.fecha|date:"Y-m-d" }}</td>
+            <td>${{ pedido.total }}</td>
+            <td>
+                <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#pedidoModal"
+                        onclick="mostrarDetallesPedido('{{ pedido.codigo_pedido }}')">
+                    <i class="fas fa-eye"></i> 
+                </button>
+                {% if pedido.estado|lower == 'cancelado' %}
+                    <span class="badge badge-danger">Cancelado</span>
+                {% elif pedido.estado|lower == 'entregado' %}
+                    <span class="badge badge-success">Entregado</span>
+                {% elif pedido.estado|lower == 'aprobado' %}
+                    <span class="badge badge-primary">Aprobado</span>
+                {% elif pedido.estado|lower == 'enviado' %}
+                    <span class="badge badge-warning">Enviado</span>
+                {% else %}
+                    <form action="{% url 'cancelar_pedido' pedido.codigo_pedido %}" method="post" style="display:inline;" class="cancel-pedido-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-cancel btn-danger btn-sm">
+                            <i class="fas fa-times"></i> Cancelar
+                        </button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+<div class="alert alert-info text-center">
+    No has realizado ningún pedido.
+</div>
+{% endif %}
+
+
+
+    <div id="noResults" class="alert text-center mt-3" style="display:none;">No se encontró ningún resultado.</div>
+</div>
+
+<!-- Modal Detalles -->
+<div class="modal fade" id="pedidoModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Pedido</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div id="loadingSpinner" class="text-center py-4" style="display: none;">
+                    <i class="fas fa-spinner fa-spin fa-3x"></i>
+                    <p class="mt-2">Cargando detalles del pedido...</p>
+                </div>
+
+                <div id="pedidoContent">
+                    <div class="mb-4">
+                        <p><strong>ID Pedido:</strong> <span id="pedidoId"></span></p>
+                        <p><strong>Cliente:</strong> <span id="pedidoCliente"></span></p>
+                        <p><strong>Correo:</strong> <span id="pedidoCorreo"></span></p>
+                        <p><strong>Teléfono:</strong> <span id="pedidoTelefono"></span></p>
+                        <p><strong>Dirección:</strong> <span id="pedidoDireccion"></span></p>
+                        <p><strong>Fecha Entrega:</strong> <span id="pedidoEntrega"></span></p>
+                        <p><strong>Fecha Pedido:</strong> <span id="pedidoFecha"></span></p>
+                        <p><strong>Total:</strong> <span id="pedidoTotal"></span></p>
+                    </div>
+                    <hr>
+                    
+                    <!-- Artículos -->
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio Unitario</th>
+                                    <th>Total</th>
+                                    <th>Imagen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pedidoArticulos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SPEED DIAL - boton flotante -->
+<div class="speed-dial" id="speedDial">
+    <div class="speed-dial-actions" id="speedActions">
+        <a class="action-button" href=""><i class="fa-brands fa-whatsapp" style="color: white;"></i></a>
+        <a class="action-button" href="https://www.instagram.com/"><i class="fa-brands fa-instagram" style="color:  white;"></i></a>
+        <a class="action-button" href="https://www.facebook.com/?locale=es_LA"><i class="fa-brands fa-facebook-f" style="color:  white;"></i></a>
+    </div>
+    <button class="fab">
+        <span class="plus">+</span>
+    </button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// Auto-cerrar alertas después de 5 segundos
+document.addEventListener("DOMContentLoaded", function () {
+    const alerts = document.querySelectorAll(".alert-success");
+    alerts.forEach(alert => {
+        setTimeout(() => {
+            $(alert).alert('close');
+        }, 5000);
+    });
+});
+
+// Función para obtener cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function mostrarDetallesPedido(codigoPedido) {
+    $('#loadingSpinner').show();
+    $('#pedidoContent').hide();
+
+    $('#pedidoId, #pedidoCliente, #pedidoCorreo, #pedidoTelefono, #pedidoDireccion, #pedidoEntrega, #pedidoFechaEntrega, #pedidoTotal').text('');
+    $('#pedidoArticulos').empty();
+
+    $('.step').removeClass('active completed');
+
+    fetch(`/pedidos/${codigoPedido}/`)
+        .then(response => {
+            if (!response.ok) throw new Error('Pedido no encontrado');
+            return response.json();
+        })
+        .then(data => {
+            $('#loadingSpinner').hide();
+            $('#pedidoContent').show();
+
+            $('#pedidoId').text(data.codigo_pedido || codigoPedido);
+            $('#pedidoCliente').text(data.cliente || '');
+            $('#pedidoCorreo').text(data.correo || '');
+            $('#pedidoTelefono').text(data.telefono || '');
+            $('#pedidoDireccion').text(data.direccion || '');
+            $('#pedidoEntrega').text(data.fechaEntrega || '');
+            $('#pedidoFecha').text(data.fecha || '');
+
+            let total = parseFloat(data.total);
+            let totalFormatted = total ? new Intl.NumberFormat('es-CO', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(total) : '0,00';
+            $('#pedidoTotal').text(totalFormatted);
+
+            const articulosList = $('#pedidoArticulos');
+            if (data.articulos && data.articulos.length) {
+                data.articulos.forEach(art => {
+                    articulosList.append(`
+                        <tr>
+                            <td>${art.nombre || ''}</td>
+                            <td>${art.cantidad || ''}</td>
+                            <td>${new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP'}).format(parseFloat(art.precio_unitario || 0))}</td>
+                            <td>${new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP'}).format(parseFloat(art.total || 0))}</td>
+                            <td>${art.imagen ? `<img src="${art.imagen}" class="producto-img">` : ''}</td>
+                        </tr>
+                    `);
+                });
+            } else {
+                articulosList.append('<tr><td colspan="5" class="text-center">No hay artículos</td></tr>');
+            }
+        });
+}
+
+
+// Buscador
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('query');
+    const table = document.querySelector('table');
+    const rows = table.querySelectorAll('tbody tr');
+    const noResults = document.getElementById('noResults');
+
+    searchInput.addEventListener('input', function () {
+        const searchTerm = searchInput.value
+            .toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, '')
+            .replace(/\//g, '-');
+
+        let anyVisible = false;
+
+        rows.forEach(row => {
+            let rowText = '';
+            row.querySelectorAll('td').forEach(cell => {
+                rowText += (cell.textContent || cell.innerText) + ' ';
+            });
+
+            rowText = rowText
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '');
+
+            if (rowText.includes(searchTerm)) {
+                row.style.display = '';
+                anyVisible = true;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        noResults.style.display = anyVisible ? 'none' : 'block';
+    });
+});
+
+// Cancelación de pedido con SweetAlert
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".cancel-pedido-form").forEach(form => {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "¿Cancelar pedido?",
+                text: "Una vez cancelado no se podrá revertir.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: '#f5365c',
+                cancelButtonColor: 'black',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(form.action, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            const row = form.closest("tr");
+                            row.classList.add("table-danger");
+                            form.innerHTML = '<span class="badge badge-danger">Cancelado</span>';
+                            Swal.fire("Cancelado", "El pedido ha sido cancelado.", "success");
+                        } else {
+                            Swal.fire("Error", data.error || "No se pudo cancelar.", "error");
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire("Error", "Ocurrió un problema al cancelar.", "error");
+                    });
+                }
+            });
+        });
+    });
+});
+
+// Botón flotante
+document.addEventListener('DOMContentLoaded', function () {
+    const speedDial = document.getElementById('speedDial');
+    const speedActions = document.getElementById('speedActions');
+
+    speedDial.addEventListener('mouseenter', () => {
+        speedActions.style.display = 'flex';
+    });
+
+    speedDial.addEventListener('mouseleave', () => {
+        speedActions.style.display = 'none';
+    });
+});
+</script>
+</body>
+</html>

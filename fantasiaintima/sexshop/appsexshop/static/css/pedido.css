@@ -1,0 +1,278 @@
+  body{
+    background-color:#f8f9fa;
+    font-family: Arial, sans-serif;
+  }
+  /*titulos*/
+  .container{
+    color: black; 
+    font-style: oblique;
+    font-weight: bolder;
+  }
+
+  .container a{
+    color: #000000;
+  }
+
+  h2{
+    font-style: oblique;
+    font-weight: bolder; 
+  }
+
+ 
+
+
+  /*tabla*/
+
+  .navbar-custom {
+      color: black;
+      height: 80px;
+  }
+  .user-info {
+      font-size: 14px;
+      color: black;
+  }
+
+
+  .table th, .table td {
+      vertical-align: middle;
+  }
+
+  thead{
+      background-color:#0000003e;
+      color: rgb(0, 0, 0);
+  }
+
+
+  /*boton*/
+
+  @media (max-width: 776px) {
+  .table td .btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}
+
+.btn-ojo{
+     background-color:  #f3eff0;
+    color: black;
+}
+
+  .btn{
+    background-color:  #f3eff0;
+    color: black;
+    }
+
+  .btn:hover{
+    background-color: #ec5876;
+    color: white;
+  }
+  
+  .btn:active {
+  background-color: #c44461; 
+  color: white;
+}
+
+/* Quitar el borde azul de focus */
+.btn:focus, .btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Cambiar el efecto de focus a rosado */
+.btn-info:focus, .btn-info:active {
+    background-color: #f06292 !important; /* rosado */
+    border-color: #f06292 !important;
+    color: white !important;
+}
+
+   /*nav y buscador*/
+ @media (max-width: 776px) {
+  .group {
+    margin-left: 0 !important; /* Evita desbordes */
+    width: 90%;
+    padding: 0 10px;
+    justify-content: center;
+  }
+
+  .input {
+    width: 100% !important;
+    max-width: 100%;
+    font-size: 14px;
+  }
+
+  .search-icon {
+    left: 1.2rem; /* Opcionalmente ajustar si el input se encoge */
+  }
+}
+
+
+  /*search - input*/
+  .group {
+    display: flex;
+    line-height: 28px;
+    align-items: center;
+    position: relative;
+    margin-left: 400px;
+  }
+
+  .input {
+    font-family: "Montserrat", sans-serif;
+    width: 280px;
+    height: 45px;
+    padding-left: 2.5rem;
+    box-shadow: 0 0 25px -11px #0000002f;
+    border: 0;
+    border-radius: 12px;
+    background-color: #fefeff;
+    outline: none;
+    color: #000000;
+    transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+    cursor: text;
+    z-index: 0;
+  }
+
+  .input::placeholder {
+    color: #bdbecb;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    fill: #bdbecb;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+
+  /* estados del pedido */
+  .stepper-container {
+        max-width: 850px; 
+        margin: 50px auto; /* Centrado horizontal y separación superior */
+        padding: 20px;
+      }
+
+  .stepper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+  .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+      }
+
+  .step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 15px;
+        right: -50%;
+        width: 100%;
+        height: 2px;
+        background-color: #555;
+        z-index: 0;
+      }
+
+  .step-icon {
+        background-color: #2d2d2d;
+        border: 2px solid #555;
+        color: #fff;
+        border-radius: 50%;
+        padding: 10px;
+        font-size: 18px;
+        z-index: 1;
+      }
+
+  .step.active .step-icon {
+        background-color: #f5365c;
+        border-color: #f5365c;
+      }
+
+  .step.completed .step-icon {
+        background-color: #4caf50;
+        border-color: #4caf50;
+      }
+
+  .step-text {
+        margin-top: 8px;
+        font-size: 14px;
+        text-align: center;
+      }
+
+
+  /* boton flotante */
+  .speed-dial {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .fab {
+    background-color: #f5365c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+
+
+  .speed-dial-actions {
+    display: none;
+    flex-direction: column;
+    margin-bottom: 10px;
+   transition: 0.10s ease-in-out;
+  }
+
+  .action-button {
+    background-color: black;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .action-button:link,
+  .action-button:visited,
+  .action-button:hover,
+  .action-button:active {
+    text-decoration: none;
+  }
+
+
+  .action-button:focus {
+    outline: none;
+  }
+
+  
+  .fab:focus {
+    outline: none;
+  }
+
+  .action-button:hover {
+    transform: scale(1.1);  
+    border-color: white;
+  }

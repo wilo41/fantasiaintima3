@@ -1,0 +1,73 @@
+body {
+    font-size: 20px;
+}
+.form-container {
+    max-width: 400px;
+    margin: 40px auto;
+    border: 1px solid #857676;
+    border-radius: 10px;
+    box-shadow: 0 0 11px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    background-color: rgb(51 32 32 / 22%);
+    color: #000000;
+    height: 620px;
+    flex-direction: column;
+}
+
+.sector1{
+    width: 100%;
+    height: 60px;
+}
+.sector2{
+    width: 100%;
+    height: 560px;
+}
+.contenedor_s1{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.contenedor_s2{
+    width: 100%;
+}
+.formulario_s2{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+}
+.logo {
+    height: 100px;
+    width: 200px;
+    align-self: center;
+}
+.button{
+    align-self: end;
+    border-radius: 10px;
+    border: 1px solid gray;
+    font-size: 14px;
+    height: 20px;
+}
+label{
+    align-self: start;
+    margin: 5px 0px;
+}
+input{
+    align-self: normal;
+    margin: 5px 0px;
+    height: 22px;
+}
+select{
+    align-self: normal;
+    margin: 5px 0px;
+    height: 22px;
+    border: 0;
+}
+.Icon_Letras{
+    display: flex;
+    flex-direction: column;
+    margin-left: 15px
+}
+

@@ -1,0 +1,310 @@
+body {
+    font-family:'Times New Roman', Times, serif;
+    background-color:rgba(224, 216, 216, 0.301);
+    background-repeat: no-repeat; 
+    background-size: cover;
+    background-attachment: fixed;
+    font-size: 20px;
+}
+
+.logo {
+    width: 250px; 
+    height: 130px;
+}
+.container {
+    max-width: 950px;
+    margin: 40px auto;
+    padding: 33px;
+    border-radius: 10px;
+   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    display: flex;
+    background-color:white;
+    color: rgb(0, 0, 0);
+    height: 430px;
+    padding-top: 70px;
+}
+
+
+/*...........*/
+@media screen and (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items:start;
+    height: auto;
+    padding: 20px 15px;
+    width: 95%;
+    box-shadow: none;
+  }
+
+  .formulario {
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .header {
+    margin: 0 auto 20px auto;
+    align-items: center;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    grid-template-areas: none;
+  }
+
+  .formulario label {
+    font-size: 16px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  .contrasena {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  button,
+  input[type="submit"] {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    margin-bottom: 6px;
+    width: auto;
+    flex: 1;
+  }
+
+  .logo {
+    width: 160px;
+    height: auto;
+  }
+
+  .profile-pic {
+    width: 120px;
+    height: 120px;
+  }
+
+  .input {
+    width: 100%;
+    display: flex;
+  flex-direction: column;
+  align-items:start;
+  width: 100%;
+  
+  }
+
+  .value {
+    justify-content: center;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .brand-name {
+    font-size: 14px;
+  }
+
+  .form-container {
+    margin-top: 20px;
+    width: 100%;
+  }
+  .botonPerfil{
+display: flex;
+justify-content: center;
+  }
+  
+}
+
+/*........................*/
+
+.header {
+    align-items: center;
+    margin-top: -20px;
+    font-size: 18px;
+    margin-right: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+
+.form-container {
+    flex: 1;
+    margin-top: 6%;
+}
+
+.formulario {
+    width: 45%;
+    margin-top: 10px;
+}
+
+label {
+    margin-bottom: 5px;
+    display: block;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+input[type="submit"] {
+    background-color: rgb(245, 245, 248);
+    color: rgb(255, 250, 250);
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+input[type="submit"]:hover {
+    background-color: rgb(249, 249, 253);
+}
+
+
+
+form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas de igual ancho */
+    gap: 10px 20px;
+    grid-template-areas:
+  "sector1 sector2"
+  "sector3 sector4";
+
+
+}
+
+input[type="text"],
+input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+button {
+    background-color: #f5365c;
+    color: white;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+
+
+
+
+.sector1{grid-area: sector1;}
+.sector2{grid-area: sector2;}
+.sector3{grid-area: sector3;}
+.sector4{grid-area: sector4;}
+
+.contrasena{
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
+.form-container input{
+    color: gray;
+}
+
+/*menu del perfil*/
+
+/* caja principal */ 
+.input {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    background-color: transparent;
+    justify-content: center;
+    border-radius: 5px;
+  }
+  
+  .value {
+    background-color: transparent;
+    border: none;
+    padding: 10px;
+    color: rgb(2, 2, 2);
+    display: flex;
+    position: relative;
+    gap: 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    white-space: nowrap; /* Evita el salto de línea */
+}
+
+.value:focus,
+.value:active {
+    background-color: rgb(0, 0, 0);
+    outline: none;
+}
+
+.value::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: -10px;
+    width: 5px;
+    height: 80%;
+    background-color: #f5365c;
+    border-radius: 5px;
+    opacity: 0;
+    /* No hay transición en la barra roja */
+}
+
+.value:focus::before,
+.value:active::before {
+    opacity: 1;
+}
+
+.value svg {
+    width: 15px;
+}
+
+/* Clase active que resalta el botón seleccionado */
+.active::before {
+    opacity: 1 !important;  /* Activa la barra lateral roja */
+}
+
+.active {
+    background-color: rgb(0, 0, 0);  /* Color de fondo cuando el botón está activo */
+    color: rgb(238, 232, 232);
+}
+
+
+
+  /*montar imagen*/
+  .profile-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-pic-label {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+}
+
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover; /* Hace que la imagen se ajuste al tamaño del círculo */
+    border: 2px solid #ccc;
+}
+
+.brand-name {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #333;
+}
+

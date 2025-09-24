@@ -1,0 +1,174 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos en {{ subcategoria.NombresubCategoria }}</title>
+  <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+  <link rel="stylesheet" href="{% static 'css/stylesCarrito.css' %}">
+  <link rel="stylesheet" href="{% static 'css/catalogo.css' %}"> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Estrellas para el modal */
+    .rating {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .rating .star {
+      font-size: 28px;
+      color: gold;
+      margin-right: 4px;
+      transition: color 0.2s ease, transform 0.1s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .rating .star:hover,
+    .rating .star.active {
+      color: orange;
+      transform: scale(1.1);
+    }
+    #alerta-carrito {
+      z-index: 9999;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Usuario oculto para JS -->
+{% if request.session.username %}
+  <div id="user-info" data-username="{{ request.session.username }}" style="display:none;"></div>
+{% endif %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a href="{% url 'Ladingpage' %}" style="color: #f5365c; cursor: pointer;" class="me-4">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+
+    <a class="navbar-brand me-2">
+      <img src="{% static 'img/carrito/Copia_de_Fantasia.png' %}" class="logoPrincipal" alt="Logo" style="height: 60px; width: 95px">
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <div class="d-flex align-items-center ms-auto">
+        <div class="search-container me-3">
+          <input id="query" type="search" class="form-control" placeholder="Buscar producto..." autocomplete="off">
+        </div>
+
+        {% if request.session.username %}
+          {% if request.session.role == 1 %}
+            <a href="{% url 'lista_notificaciones' %}" class="btn btn-outline-secondary position-relative">
+              <i class="fa-solid fa-bell"></i>
+              {% with notificaciones_no_leidas=notificaciones|dictsort:"-fecha"|length %}
+                {% if notificaciones_no_leidas > 0 %}
+                  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ notificaciones_no_leidas }}
+                  </span>
+                {% endif %}
+              {% endwith %}
+            </a>
+          {% endif %}
+        {% endif %}
+
+        <a href="{% url 'carrito' %}" class="btn btn-outline-secondary me-2">
+          <i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span>
+        </a> 
+
+        <button class="btn btn-outline-secondary">
+          <a href="{% url 'perfiles' %}" style="color: #f5365c;"><i class="fas fa-user"></i></a>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<h4 class="titulosLading" style="color:#f5365c; text-align:center;">
+  <hr> ✰ Productos en {{ subcategoria.NombresubCategoria }} ✰
+  <p style="font-size: 14px; color: #000000;">¡Descubre tu placer!</p>
+  <hr>
+</h4>
+
+<!-- Productos -->
+<div class="container mt-5">
+  <div class="row" id="productList">
+    {% for producto in productos %}
+      <div class="col-md-3 mb-4">
+        <div class="card" 
+             data-id="{{ producto.IdProducto }}" 
+             data-nombre="{{ producto.Nombre|escapejs }}" 
+             data-precio="{{ producto.Precio }}" 
+             data-imagen="{{ producto.Img.url }}" 
+             data-descripcion="{{ producto.Descripcion|escapejs }}" 
+             data-cantidad="{{ producto.Cantidad }}" 
+             data-rating="{{ producto.rating|default:1 }}" 
+             data-review-count="{{ producto.review_count|default:1 }}">
+          <img src="{{ producto.Img.url }}" class="card-img-top" alt="{{ producto.Nombre }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ producto.Nombre }}</h5>
+            <p class="card-text">Precio: ${{ producto.Precio|floatformat:0 }}</p>
+            <p class="card-text text-success" style="font-size: 0.95em;">
+              Stock disponible: {{ producto.Cantidad }}
+            </p>
+
+            <button class="btn add-to-cart-btn" style="background-color: #f5365c; color: white;" {% if not producto.Cantidad %}disabled{% endif %}>
+              <i class="fas fa-shopping-cart"></i> Añadir al carrito
+            </button>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>No hay productos disponibles.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- mensaje de alerta al no encontrar producto -->
+<div id="noResultsMessage" class="text-center my-5 d-none">
+  <img src="{% static 'img/carrito/carrito.png' %}" alt="icono carrito" style="width: 80px;">
+  <p class="text-muted fs-5">No se encontraron productos</p>
+</div>
+
+<!-- Modal para Detalles del Producto -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productModalLabel">Detalles del Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="productDetails">
+        <div class="rating" id="modalRating"></div>
+      </div>
+      <div id="mensaje-calificacion" class="alert alert-success d-none" role="alert"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn" id="add-to-cart-modal" style="background-color: #f5365c; color: white;">
+          Agregar al carrito <i class="fas fa-shopping-cart"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTA flotante -->
+<div id="alerta-carrito" class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 text-center d-none shadow rounded-3 px-4 py-2">
+  Producto agregado al carrito 💖
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'js/carrito/catalogo.js' %}"></script>
+
+</body>
+</html>

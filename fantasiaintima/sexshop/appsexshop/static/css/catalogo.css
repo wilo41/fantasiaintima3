@@ -1,0 +1,30 @@
+#productList .card {
+  height: 100%;
+  display: flex;
+}
+
+#productList .card-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#productList .card-body h5 {
+  min-height: 1rem; 
+}
+
+#productList .card-body .card-text {
+  min-height: 10px; }
+
+#productList .card .card-img-top {
+  height: 150px;
+  object-fit: cover;
+}
+
+#productList .add-to-cart-btn {
+  font-size: 1.1em;
+  width: 200px;
+  align-self: center; }
+
+

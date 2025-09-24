@@ -1,0 +1,70 @@
+body {
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 20px;
+}
+.container {
+    width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px #ccc;
+    text-align: center;
+    box-shadow: 0 0 11px 15px rgba(0, 0, 0, 0.1);
+    height: 250px;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+}
+.salir{
+    display: flex;
+}
+.container a {
+    font-size: 30px;
+    color: blue;
+}
+
+.Elegir {
+    color: rgb(5, 5, 5);
+    margin-top: -11px;
+  
+
+}
+  
+.button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #f8faf8;
+    color: rgb(7, 7, 7);
+    border-radius: 10px;
+    cursor: pointer; 
+    font-size: 16px;
+}
+
+.button:hover {
+    background-color: black;
+    color: white;
+}
+.btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #f8faf8;
+    color: rgb(7, 7, 7);
+    border-radius: 10px;
+    cursor: pointer; 
+    font-size: 16px;
+
+}
+.btn-primary{
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #f8faf8;
+    color: rgb(7, 7, 7);
+    border-radius: 10px;
+    cursor: pointer; 
+    font-size: 16px;
+}
+
+
+  

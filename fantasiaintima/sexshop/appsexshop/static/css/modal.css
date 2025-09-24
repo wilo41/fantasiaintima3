@@ -1,0 +1,34 @@
+/* Estilos del Modal */
+.modal-body {
+    display: flex;
+    align-items: center;
+}
+
+.modal-body .image-container {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.modal-body .image-container img {
+    max-width: 100%;
+    height: auto;
+}
+
+.modal-body .product-details {
+    flex: 2;
+}
+
+.stars .star {
+    font-size: 2rem;
+    color: #ddd;
+    cursor: pointer;
+}
+
+.stars .star.active {
+    color: gold;
+}
+
+#productQuantity {
+    width: 60px;
+    text-align: center;
+}

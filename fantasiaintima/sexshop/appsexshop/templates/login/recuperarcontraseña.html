@@ -1,0 +1,97 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña</title>
+    <link rel="stylesheet" href="{% static 'css/style22.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <style>
+     
+      .error-message {
+        color: yellow;
+        font-size: 16px;
+        margin-top: -35px;
+        display: none; /* Oculto por defecto */
+      }
+
+      .message {
+        background-color: rgba(255, 0, 0, 0.1); /* Rojo suave */
+        border: 1px solid red;
+        padding: 10px;
+        border-radius: 8px;
+        color: red;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      
+    </style>
+  </head>
+  <body>
+    
+    <div class="form-container">
+   
+      <p class="title">Fantasia Intima</p>
+      <p class="title1">Recuperar Contraseña</p>
+
+      {% if messages %}
+      <div class="messages">
+          {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+              {{ message }}
+          </div>
+          {% endfor %}
+      </div>
+      {% endif %}
+      
+
+
+      <form class="form" id="recoverForm" method="post">
+        {% csrf_token %}
+        
+        <input type="email" id="email" name="email" class="input" placeholder="Correo Electrónico">
+        <span class="error-message" id="error-email"></span>
+        <button type="submit" class="form-btn">Enviar código</button>
+      </form>
+    </div>
+
+  </body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const email = document.getElementById('email');
+      const errorMessage = document.getElementById('error-email');
+    
+      function isValidEmail(emailValue) {
+        return /^[^@]+@(gmail\.com|hotmail\.com|yahoo\.com)$/.test(emailValue);
+      }
+    
+      // Validar cuando el formulario se envía
+      document.getElementById('recoverForm').addEventListener('submit', function (e) {
+        const value = email.value.trim();
+    
+        if (!isValidEmail(value)) {
+          e.preventDefault();
+          email.classList.add('input-error');
+          errorMessage.textContent = 'Por favor ingresa una direccion de correo valida';
+          errorMessage.style.display = 'block';
+        } else {
+          email.classList.remove('input-error');
+          errorMessage.style.display = 'none';
+        }
+      });
+    
+      // Escuchar cambios después de un error para eliminar el mensaje si ya es válido
+      email.addEventListener('input', function () {
+        const value = email.value.trim();
+        if (isValidEmail(value)) {
+          email.classList.remove('input-error');
+          errorMessage.style.display = 'none';
+        }
+      });
+    });
+    
+  </script>
+</html>

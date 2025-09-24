@@ -1,0 +1,92 @@
+{% load static %}
+{% include 'inc/header.html'%}
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito de Compras</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/carrito.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+  <!-- 🔑 Ahora el JS podrá leer bien si hay usuario en sesión -->
+  <div id="user-data" data-username="{{ request.session.username|default:'' }}"></div>
+
+  <div class="container">
+    <button class="btn-back" onclick="goBack()">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+    <br><br>
+    <h2>Tu Carrito de Compras</h2>
+    <br>
+    <div id="cart-container"></div>
+
+    <div class="cart-summary">
+      <h3>Total: <span id="total-amount">$0.00</span></h3>
+
+      <!-- 🔽 Pasarela PayPal debajo del total -->
+      <div id="paypal-form-container" class="mt-2 text-center"></div>
+
+      <!-- Botones alineados a la derecha -->
+      <div class="summary-buttons d-flex justify-content-end mt-3 gap-2">
+        <button class="btn btn-dark" onclick="clearCart()">Vaciar Carrito</button>
+        <button class="btn btn-sm"
+          data-bs-toggle="modal" data-bs-target="#paymentModal"
+          style="background-color: #f5365c; color: white; font-size: 1rem; border-radius: 6px;">
+          Pagar Todo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content rounded-4">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-dark" id="paymentModalLabel">¡REGISTRO DE PAGO!</h5>
+        </div>
+        <div class="modal-body px-4">
+          <form id="formPago">
+            <div class="mb-2">
+              <label for="nombreCompleto" class="form-label fw-bold text-dark" style="font-size: 0.9rem;">Nombre Completo</label>
+              <input type="text" class="form-control rounded-3 shadow-none" id="nombreCompleto" required>
+            </div>
+            <div class="mb-2">
+              <label for="direccion" class="form-label fw-bold text-dark" style="font-size: 0.9rem;">Dirección</label>
+              <input type="text" class="form-control rounded-3 shadow-none" id="direccion" required>
+            </div>
+            <div class="mb-2">
+              <label for="correo" class="form-label fw-bold text-dark" style="font-size: 0.9rem;">Correo Electrónico</label>
+              <input type="email" class="form-control rounded-3 shadow-none" id="correo" required>
+            </div>
+            <div class="mb-2">
+              <label for="telefono" class="form-label fw-bold text-dark" style="font-size: 0.9rem;">Teléfono</label>
+              <input type="tel" class="form-control rounded-3 shadow-none" id="telefono" required>
+            </div>
+            <div class="mb-2">
+              <label for="fechaEntrega" class="form-label fw-bold text-dark" style="font-size: 0.9rem;">Fecha de Entrega</label>
+              <input type="date" class="form-control rounded-3 shadow-none" id="fechaEntrega" required>
+            </div>
+            <div class="modal-footer px-0 flex-column">
+              <div class="d-flex justify-content-between w-100">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-warning" id="btnPayPal"
+                  style="color: white; font-size: 1rem; border-radius: 6px;">
+                  <i class="fab fa-paypal"></i> Pagar con PayPal
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{% static 'js/carrito/carrito.js' %}"></script>
+</body>
+</html>

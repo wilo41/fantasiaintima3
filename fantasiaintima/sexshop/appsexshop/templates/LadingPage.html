@@ -1,0 +1,719 @@
+{% load static %}
+{% include 'inc/header.html'%}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{% static 'img/icon.png' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+     <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+      <link rel="stylesheet" href="{% static 'css/catalogo.css' %}"> 
+
+    <title>Fantasia Intima</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+    <link rel="stylesheet" href="{% static 'css/LadingPage_estilos1.css' %}">
+    
+   
+    <style>
+        .search-results-container {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .search-product-card {
+            width: 18rem;
+            box-shadow: 10px 10px 10px black;
+            margin: 10px;
+            display: inline-block;
+        }
+        
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        
+        .hidden-section {
+            display: none;
+        }
+        
+        /* New styles for search functionality */
+        .search-active .slider-section,
+        .search-active .featured-collections,
+        .search-active .products-section {
+            display: none;
+        }
+        
+        .search-active .search-results-container {
+            display: block;
+        }
+         /* Agregamos estilos para las estrellas */
+        .star {
+            font-size: 20px; /* Ajusta tamaño según necesidad */
+            color: gold;
+            cursor: pointer;
+            user-select: none;
+            margin-right: 2px;
+        }
+        .star.active {
+            color: orange;
+        }
+    </style>
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+     <div class="container-fluid d-flex align-items-center flex-wrap">
+       <!-- Logo -->
+       <a class="navbar-brand me-2">
+         <img src="{% static 'img/labio9.png' %}" class="logoPrincipal" alt="Logo" style="height: 60px; width: 95px">
+       </a>
+   
+       <!--search bar (barra de busqueda)-->
+       <div class="group" id="search-group">
+         <svg viewBox="0 0 24 24" aria-hidden="true" class="search-icon">
+           <g>
+             <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.214 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.215 0 4.24-.804 5.808-2.13l3.66 3.66c.147.146.34.22.53.22s.385-.073.53-.22c.295-.293.295-.767.002-1.06zM3.5 11c0-4.135 3.365-7.5 7.5-7.5s7.5 3.365 7.5 7.5-3.365 7.5-7.5 7.5-7.5-3.365-7.5-7.5z"></path>
+           </g>
+         </svg>
+         <input id="query" class="input" type="search" placeholder="Buscar Producto" name="searchbar">
+       </div>
+
+
+       <li class="Usuario">
+         {% if request.session.username %}
+             <div class="dropdown">
+                 <a class="nav-link dropdown-toggle" id="ingreso" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                     <i class="fa-solid fa-user"></i> Bienvenid@, <strong>{{ request.session.username}}</strong>
+                 </a>
+                 <ul class="dropdown-menu">
+
+                     <li><a class="dropdown-item" href="{% url 'perfiles' %}"><i class="fa-solid fa-address-card"></i> Mi Perfil</a></li>
+
+                     <li><a class="dropdown-item" href="{% url 'pedido' %}"><i class="fa-solid fa-truck"></i> Historial de Pedidos</a></li>
+
+
+                     {% if request.session.role == 1 %}
+                     <li><a class="dropdown-item" href="{% url 'listadocategorias' %}"><i class="fa-regular fa-file"></i> Gestiones</a></li>
+
+                     <li><a class="dropdown-item" href="{% url 'solicitud' %}"><i class="fa-solid fa-file-circle-plus"></i> Solicitud</a></li>
+                     {% endif %}
+
+                     <li><hr class="dropdown-divider"></li>
+                     <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-power-off"></i> Cerrar Sesión</a></li>
+                 </ul>
+             </div>
+         {% else %}
+             <a class="Inicio" href="{% url 'login' %}" style="padding: 8px 15px;">
+                 <i class="fa-regular fa-user"></i> Iniciar Sesión
+             </a>
+         {% endif %}
+       </li>
+
+       <!--icono carrito de compras-->
+                     <button class="btn btn-outline-secondary me-2"  id="btnCarrito">
+                    <a href="{% url 'carrito' %}" style="text-decoration: none; color: inherit;">
+                        <i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span>
+                    </a>
+                </button>  
+
+       <!-- Botón del menú para pantallas pequeñas -->
+       <button class="navbar-toggler d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+     </div>
+   </nav>  
+
+   <!-- Menú Offcanvas para pantallas pequeñas -->
+   <div class="offcanvas offcanvas-start d-lg-none" id="offcanvasMenu" tabindex="-1" aria-labelledby="offcanvasMenuLabel">
+     <div class="offcanvas-header">
+       <h5 id="offcanvasMenuLabel">Categorías</h5>
+       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+     </div>
+     <div class="offcanvas-body">
+       <ul class="navbar-nav">
+         {% for categoria in categorias %}
+         <li class="nav-item">
+           <p class="categoriasTitulo" href="#">{{ categoria.NombreCategoria }}</p>
+
+
+                       <ul class="list-unstyled ms-3">
+            {% for subcategoria in categoria.subcategoria_set.all %}
+              <li>
+                <a class="dropdown-item" href="{% url 'productos_por_subcategoria' subcategoria.IdSubCategoria %}">
+                  {{ subcategoria.NombresubCategoria }}
+                </a>
+              </li>
+            {% empty %}
+              <li><a class="dropdown-item disabled">No hay subcategorías</a></li>
+         {% endfor %}
+      
+          </ul>
+             {% endfor %}
+     </div>
+   </div>
+
+   <!-- Categorías para pantallas grandes -->
+   <nav class="navbar navbar-expand-lg bg-body-tertiary d-none d-lg-block">
+     <div class="container-fluid">
+       <div class="collapse navbar-collapse" id="navbarSupportedContent">
+         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+           {% for categoria in categorias %}
+           <li class="nav-item dropdown">
+             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+               {{ categoria.NombreCategoria }}
+             </a>
+             <!-- Menú desplegable -->
+
+             <ul class="dropdown-menu dropdown-menu" id="custom-dropdown">
+               {% for subcategoria in categoria.subcategoria_set.all %}
+                 <li><a class="dropdown-item" href="{% url 'productos_por_subcategoria' subcategoria.IdSubCategoria %}"> {{ subcategoria.NombresubCategoria }}</a></li>
+               {% empty %}
+                 <li><a class="dropdown-item" href="#">No hay subcategorías</a></li>
+               {% endfor %}
+             </ul>
+           </li>
+           {% endfor %}
+         </ul>
+         
+       </div>
+     </div>
+   </nav>
+</header>
+
+<div class="main-content">
+    <!--slider-->
+    <div class="slider-section" id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="{% static 'img/portada1.png' %}" class="d-block w-100" alt="">
+          </div>
+          <div class="carousel-item">
+            <img src="{% static 'img/portada2.png' %}" class="d-block w-100" alt="...">
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+  
+
+ 
+
+    <!--cards productos Destacados-->
+    <h4 class="titulosLading" style="color:#f5365c;  text-align:center; "><hr> ✰ Colecciones destacadas ✰<p style="font-size: 14px; color: #000000;">¡Descubre tu placer!</p><hr></h4>
+    <div class="featured-collections ">
+        <!-- card 1-->
+        <div class="card1">
+          <div class="image-container">
+            <img src="{% static 'img/producto1.png' %}" class="card-img-top" alt="..." style="height: 150px; object-fit: cover;">
+            <div class="overlay">
+              <h6 class="cajas">Donde el placer comienza</h6>
+              <a href="{% url 'lencerias' %}" style="color: white;">Ver Mas</a>
+            </div>
+          </div>
+          <div class="card-body" style="min-height: 50px;">
+            <h5 class="card-title"><center><a href="{% url 'lencerias' %}" style="color: inherit; text-decoration: none;">Lencerias</a></center></h5>
+          </div>
+        </div>
+
+        <!-- card 2-->
+        <div class="card1">
+          <div class="image-container">
+            <img src="{% static 'img/dildos.png' %}"  class="card-img-top" alt="..." style="height: 150px; object-fit: cover;">
+            <div class="overlay">
+              <h6 class="cajas"> Intimidad sin barreras</h6>
+              <a href="{% url 'dildos' %}" style="color: white;">Ver Mas</a>
+            </div>
+          </div>
+          <div class="card-body" style="min-height: 50px;">
+            <h5 class="card-title"><center><a href="{% url 'dildos' %}" style="color: inherit; text-decoration: none;">Dildos</a></center></h5>
+          </div>
+        </div>
+
+        <!-- card 3-->
+        <div class="card1 ">
+          <div class="image-container">
+            <img src="{% static 'img/juguetes.png' %}" class="card-img-top" alt="..." style="height: 150px; object-fit: cover;">
+            <div class="overlay">
+              <h6 class="cajas">Explora tus deseos</h6>
+              <a href="{% url 'vibradores' %}" style="color: white;">Ver Mas</a>
+            </div>
+          </div>
+          <div class="card-body" style="min-height: 50px;">
+            <h5 class="card-title"><center><a href="{% url 'vibradores' %}" style="color: inherit; text-decoration: none;">Vibradores</a></center></h5>
+          </div>
+        </div>
+
+        <!-- card 4-->
+        <div class="card1">
+          <div class="image-container">
+            <img src="{% static 'img/disfraz.png' %}"  class="card-img-top" alt="..." style="height: 150px; object-fit: cover;">
+            <div class="overlay">
+              <h6 class="cajas">Despierta tu pasión</h6>
+              <a href="{% url 'disfraces' %}" style="color: white;">Ver Mas</a>
+            </div>
+          </div>
+          <div class="card-body" style="min-height: 50px;">
+            <h5 class="card-title"><center><a href="{% url 'disfraces' %}" style="color: inherit; text-decoration: none;">Disfraces</a></center></h5>
+          </div>
+        </div>
+    </div>
+
+
+
+    <!--cards productos con slider-->
+    <div class="products-section">
+      <h4 class="titulosLading" style="color:#f5365c;"><center><hr> Nuestros Productos <p style="font-size: 14px; color: #000000;">¡Tu placer, nuestra pasión!</p><hr></center></h4>
+
+       <div id="carouselProductos" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+
+        {% for grupo in productos_agrupados %}
+        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+          <div class="row justify-content-center" id="productList">
+            {% for prod in grupo %}
+              <div class="col-12 col-md-3 mb-4 d-flex justify-content-center">
+                
+                <div class="card"
+                     style="width: 18rem; box-shadow: 10px 10px 10px black;"
+                     data-id="{{ prod.IdProducto }}"
+                     data-nombre="{{ prod.Nombre }}"
+                     data-precio="{{ prod.Precio }}"
+                    data-imagen="{% if prod.Img %}{{ prod.Img.url }}{% else %}{% static 'img/default.png' %}{% endif %}"
+                     data-descripcion="{{ prod.Descripcion }}"
+                     data-cantidad="{{ prod.Cantidad }}"
+                     data-rating="{{ prod.Rating|default:3 }}">
+                  
+                  {% if prod.Img %}
+                    <img src="{{ prod.Img.url }}" class="card-img-top" alt="{{ prod.Nombre }}" style="height: 150px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'img/default.png' %}" class="card-img-top" alt="..." style="height: 150px; object-fit: cover;">
+                  {% endif %}
+
+                  <div class="card-body" style="min-height: 150px;">
+                    <h5 class="card-title">{{ prod.Nombre }}</h5>
+                    <p class="card-text">{{ prod.Descripcion }}<br><br>${{ prod.Precio|floatformat:"0" }}</p>
+                    <!-- Aquí puedes agregar una descripción del producto si lo deseas -->
+          <p class="card-text text-success" style="font-size: 0.95em;">
+  Stock disponible: {{ prod.Cantidad }}
+</p>
+          <div class="rating">
+            {% for i in "54321" %}
+              <input value="{{ i }}" name="rate{{ producto.IdProducto }}" id="star{{ producto.IdProducto }}{{ i }}" type="radio" {% if producto.rating|default:4 >= i %}checked{% endif %}>
+            {% endfor %}
+          </div>
+          
+          <button class="btn add-to-cart-btn" style="background-color: #f5365c; color: white;" {% if producto.Cantidad == 0 %}disabled{% endif %}>
+  <i class="fas fa-shopping-cart"></i> Añadir al carrito
+</button>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+
+    </div>
+  
+
+ <button class="carousel-control-prev" type="button" data-bs-target="#carouselProductos" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: #f5365c; border-radius: 40px;"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselProductos" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: #f5365c; border-radius: 40px;"></span>
+      <span class="visually-hidden">Siguiente</span>
+    </button>
+  </div>
+</div>
+
+    
+    <!-- Modal para Detalles del Producto -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Detalles del Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="productDetails">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+            <div id="mensaje-calificacion" class="alert alert-success d-none" role="alert"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn" id="add-to-cart-modal" style="background-color: #f5365c; color: white;">
+                    Agregar al carrito <i class="fas fa-shopping-cart"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ALERTA DE PRODUCTO AGREGADO -->
+<div id="alerta-carrito" 
+     class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 text-center d-none shadow rounded-3 px-4 py-2" 
+     style="z-index: 2000; font-size: 1rem;">
+  Producto agregado al carrito 💖
+</div> 
+
+
+
+<!-- Search Results Container -->
+<div id="search-results-container" class="search-results-container">
+    <div class="row" id="search-results-row"></div>
+</div>
+
+<!-- footer -->
+<footer class="text-light pt-4" style="background-color: #000000;">
+    <div class="container">
+        <div class="row text-center text-md-start">
+            <!-- Información de Contacto -->
+            <div class="col-12 col-md-6 col-lg-3 mb-3">
+                <h5 style="font-size: 22px; text-align: center;">Contacto</h5>
+                <ul class="list-unstyled">
+                    <li style="text-align: center;">Email: FantasiaIntima@gmail.com</li>
+                    <li style="text-align: center;">Teléfono: +57 301 456 789</li>
+                    <li style="text-align: center;">Dirección: Calle 54, Medellin</li>
+                </ul>
+            </div>
+            <!-- Aviso Legal -->
+            <div class="col-12 col-md-6 col-lg-3 mb-3">
+                <h5 style="font-size: 22px; text-align: center;">Aviso Legal</h5>
+                <ul class="list-unstyled">
+                    <p style="text-align: center;">Este sitio esta dirigido a mayores de 18 años</p>
+                    <li style="text-align: center;"><a href="#" class="text-light">Términos y Condiciones</a></li>
+                    <li style="text-align: center;"><a href="#" class="text-light">Política de Privacidad</a></li>
+                </ul>
+            </div>
+            <!-- Envíos y Entregas -->
+            <div class="col-12 col-md-6 col-lg-3 mb-3">
+                <h5 style="font-size: 22px; text-align: center;">Envíos y Entregas</h5>
+                <ul class="list-unstyled">
+                    <li style="text-align: center;"><p>Envios a toda la ciudad</p></li>
+                    <li style="text-align: center;"><p><i class="fa-solid fa-truck"></i> Costos y Tiempos de Entrega Varian segun la ubicacion</p></li>
+                </ul>
+            </div>
+            <!-- Sobre Nosotros -->
+            <div class="col-12 col-md-6 col-lg-3 mb-3">
+                <h5 style="font-size: 22px; text-align: center;">Sobre Nosotros</h5>
+                <ul class="list-unstyled">
+                    <li style="text-align: center;"><p>Somos una SexShop comprometida con el bienestar y la satisfaccion sexual de nuestros clientes</p></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row align-items-center mt-4 text-center">
+            <!-- Logo -->
+            <div class="col-12 col-md-4 mb-3">
+                <img src="{% static 'img/labio9.png' %}" alt="Logo de la tienda" class="img-fluid" style="max-width: 100px;">
+            </div>
+            <!-- Redes Sociales -->
+            <div class="col-12 col-md-4 mb-3">
+                <div>
+                    <a href="#" class="text-light me-2"><i class="fab fa-whatsapp fa-2x"></i></a>
+                    <a href="#" class="text-light me-2"><i class="fab fa-twitter fa-2x"></i></a>
+                    <a href="#" class="text-light me-2"><i class="fab fa-instagram fa-2x"></i></a>
+                    <a href="#" class="text-light me-2"><i class="fab fa-facebook fa-2x"></i></a>
+                </div>
+            </div> 
+            <!-- Derechos Reservados -->
+            <div class="col-12 col-md-4 mb-3">
+                <p class="mb-0">&copy; 2024 Fantasía Íntima. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- spinner de carga -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="text-center">
+      <div class="spinner-border text-danger" role="status">
+          <span class="sr-only"></span>
+      </div>
+      <p class="text-white mt-3">Cerrando sesión...</p>
+  </div>
+</div>
+
+<!-- Scripts -->
+ <script src="{% static 'js/carrito/productos.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script src="{% static 'js/productos.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="{% static 'js/ladingPage/productosLading.js' %}"></script>
+
+<script>
+  
+// ============================
+// carrito.js / catalogo.js
+// ============================
+
+const carritoKey = 'carrito';
+
+// ============================
+// Funciones LocalStorage
+// ============================
+const obtenerCarrito = () => JSON.parse(localStorage.getItem(carritoKey) || '[]');
+const guardarCarrito = carrito => localStorage.setItem(carritoKey, JSON.stringify(carrito));
+
+// ============================
+// Icono Carrito
+// ============================
+const actualizarIconoCarrito = () => {
+    const total = obtenerCarrito().reduce((acc, item) => acc + item.cantidad, 0);
+    const icono = document.getElementById('cartCount');
+    if (icono) {
+        icono.textContent = total;
+        icono.style.display = total > 0 ? 'inline' : 'none';
+    }
+};
+
+// ============================
+// Agregar al Carrito
+// ============================
+function agregarAlCarrito(idProducto, nombre, precio, cantidad, imagen, descripcion) {
+    const carrito = obtenerCarrito();
+    let prod = carrito.find(p => p.IdProducto == idProducto);
+    let stock = 1;
+
+    const card = document.querySelector(`.card[data-id="${idProducto}"]`);
+    if (card) stock = parseInt(card.getAttribute('data-cantidad')) || 1;
+
+    if (prod && prod.cantidad >= stock) {
+        Swal.fire('Stock insuficiente', 'Ya agregaste la cantidad máxima disponible.', 'warning');
+        return;
+    }
+
+    if (prod) {
+        prod.cantidad = Math.min(prod.cantidad + cantidad, stock);
+        prod.stock = stock;
+    } else {
+        carrito.push({ IdProducto: idProducto, nombre, precio, cantidad, imagen, descripcion, stock });
+    }
+
+    guardarCarrito(carrito);
+    actualizarIconoCarrito();
+}
+
+// ============================
+// Alerta Producto Agregado
+// ============================
+// ============================
+// Alerta Producto Agregado
+// ============================
+function mostrarAlertaCarrito() {
+    let alerta = document.getElementById("alerta-carrito");
+
+    // Si no existe, creamos un div flotante temporal
+    if (!alerta) {
+        alerta = document.createElement("div");
+        alerta.id = "alerta-carrito";
+        alerta.className = "alert alert-success position-fixed top-0 end-0 m-3";
+        alerta.style.zIndex = 9999;
+        alerta.textContent = "Producto agregado al carrito!";
+        document.body.appendChild(alerta);
+    }
+
+    alerta.classList.remove("d-none");      // Mostrar
+    alerta.style.opacity = 1;               // Asegurar visibilidad
+
+    // Desaparece después de 2 segundos
+    setTimeout(() => {
+        alerta.style.transition = "opacity 0.5s";
+        alerta.style.opacity = 0;
+        setTimeout(() => alerta.classList.add("d-none"), 500);
+    }, 2000);
+}
+
+// ============================
+// Modal Detalles Producto
+// ============================
+function mostrarDetallesProducto(producto) {
+    const detalles = `
+        <div class="row">
+            <div class="col-md-5">
+                <img src="${producto.imagen}" class="img-fluid" alt="${producto.nombre}">
+            </div>
+            <div class="col-md-7">
+                <h4>${producto.nombre}</h4>
+                <p>${producto.descripcion}</p>
+                <p><strong>Precio:</strong> $${producto.precio}</p>
+                <p><strong>Stock disponible:</strong> ${producto.cantidad}</p>
+                <div class="rating mb-2">
+                    ${[1,2,3,4,5].map(i => `<span class="star${i <= producto.rating ? ' active' : ''}">&#9733;</span>`).join('')}
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                    <button class="btn btn-outline-secondary" id="decreaseQuantity">-</button>
+                    <input type="number" id="productQuantity" value="1" min="1" max="${producto.cantidad}" class="mx-2" style="width: 60px; text-align: center;">
+                    <button class="btn btn-outline-secondary" id="increaseQuantity">+</button>
+                </div>
+                <button class="btn btn-danger w-100 mt-2" id="add-to-cart-modal">
+                    <i class="fas fa-shopping-cart"></i> Añadir al carrito
+                </button>
+            </div>
+        </div>
+    `;
+    document.getElementById('productDetails').innerHTML = detalles;
+
+    const quantityInput = document.getElementById('productQuantity');
+    document.getElementById('increaseQuantity').onclick = () => {
+        let val = parseInt(quantityInput.value);
+        if (val < producto.cantidad) quantityInput.value = val + 1;
+    };
+    document.getElementById('decreaseQuantity').onclick = () => {
+        let val = parseInt(quantityInput.value);
+        if (val > 1) quantityInput.value = val - 1;
+    };
+
+    const addBtn = document.getElementById('add-to-cart-modal');
+    addBtn.replaceWith(addBtn.cloneNode(true));
+    const newAddBtn = document.getElementById('add-to-cart-modal');
+
+    newAddBtn.addEventListener('click', () => {
+        const cantidad = parseInt(quantityInput.value) || 1;
+        agregarAlCarrito(producto.id, producto.nombre, parseFloat(producto.precio), cantidad, producto.imagen, producto.descripcion);
+        mostrarAlertaCarrito();
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('productModal'));
+    modal.show();
+}
+
+// ============================
+// Buscador Seguro
+// ============================
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('query');
+    const searchResultsContainer = document.getElementById('search-results-container');
+    const searchResultsRow = document.getElementById('search-results-row');
+    const body = document.body;
+
+    const productos = [
+        {% for producto in productos %}
+        {
+            id: {{ producto.IdProducto }},
+            nombre: "{{ producto.Nombre|escapejs }}",
+            descripcion: "{{ producto.Descripcion|escapejs }}",
+            precio: {{ producto.Precio }},
+            cantidad: {{ producto.Cantidad }},
+            rating: {{ producto.Rating|default:3 }},
+            imagen: "{% if producto.Img %}{{ producto.Img.url }}{% else %}{% static 'img/default.png' %}{% endif %}",
+            categoria: "{{ producto.IdSubCategoria.categoria.NombreCategoria|default:''|escapejs }}",
+            subcategoria: "{{ producto.IdSubCategoria.NombresubCategoria|default:''|escapejs }}"
+        },
+        {% endfor %}
+    ];
+
+    searchInput.addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase().trim();
+        searchResultsRow.innerHTML = '';
+
+        if (searchTerm.length > 0) {
+            body.classList.add('search-active');
+            searchResultsContainer.style.display = 'block';
+
+            const filteredProducts = productos.filter(p =>
+                p.nombre.toLowerCase().includes(searchTerm) ||
+                p.descripcion.toLowerCase().includes(searchTerm) ||
+                p.categoria.toLowerCase().includes(searchTerm) ||
+                p.subcategoria.toLowerCase().includes(searchTerm)
+            );
+
+            if (filteredProducts.length > 0) {
+                filteredProducts.forEach(producto => {
+                    const cardWrapper = document.createElement('div');
+                    cardWrapper.className = 'col-12 col-md-3 mb-4 d-flex justify-content-center';
+                    const rating = producto.rating || 3;
+
+                    cardWrapper.innerHTML = `
+                        <div class="card d-flex flex-column" style="width: 18rem; box-shadow: 10px 10px 10px black; height: 100%;"
+                            data-id="${producto.id}"
+                            data-nombre="${producto.nombre}"
+                            data-precio="${producto.precio}"
+                            data-imagen="${producto.imagen}"
+                            data-descripcion="${producto.descripcion}"
+                            data-cantidad="${producto.cantidad}"
+                            data-rating="${rating}">
+                            <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}" style="height: 150px; object-fit: cover;">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <h5 class="card-title">${producto.nombre}</h5>
+                                    <p class="card-text">${producto.descripcion.substring(0, 60)}...<br><br>$${producto.precio}</p>
+                                    <p class="card-text text-success" style="font-size: 0.95em;">
+                                        Stock disponible: ${producto.cantidad}
+                                    </p>
+                                    <div class="rating mb-3">
+                                        ${[5,4,3,2,1].map(i => `
+                                            <input value="${i}" name="rate${producto.id}" id="star${producto.id}${i}" type="radio" ${rating >= i ? 'checked' : ''}>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger add-to-cart-btn mt-auto w-100" ${producto.cantidad == 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-shopping-cart"></i> Añadir al carrito
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    searchResultsRow.appendChild(cardWrapper);
+                });
+            } else {
+                searchResultsRow.innerHTML = '<p class="text-center">No se encontraron productos.</p>';
+            }
+        } else {
+            body.classList.remove('search-active');
+            searchResultsContainer.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (!document.getElementById('search-group').contains(e.target) && searchInput.value === '') {
+            body.classList.remove('search-active');
+            searchResultsContainer.style.display = 'none';
+        }
+    });
+});
+
+// ============================
+// Delegación Click - Añadir al carrito
+// ============================
+document.addEventListener('click', e => {
+    const btn = e.target.closest('.add-to-cart-btn');
+    if (btn) {
+        const card = btn.closest('.card');
+        if (card) {
+            const producto = {
+                id: card.getAttribute('data-id'),
+                nombre: card.getAttribute('data-nombre'),
+                descripcion: card.getAttribute('data-descripcion'),
+                precio: parseFloat(card.getAttribute('data-precio')),
+                cantidad: 1,
+                stock: parseInt(card.getAttribute('data-cantidad')) || 1,
+                imagen: card.getAttribute('data-imagen')
+            };
+            agregarAlCarrito(producto.id, producto.nombre, producto.precio, producto.cantidad, producto.imagen, producto.descripcion);
+            mostrarAlertaCarrito();
+        }
+    }
+});
+
+// ============================
+// Inicialización
+// ============================
+actualizarIconoCarrito();
+
+
+</script>
+</body>
+</html>
+{% include 'inc/footer.html' %}

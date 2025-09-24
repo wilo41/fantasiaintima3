@@ -1,0 +1,206 @@
+{% load static %}
+{% include 'inc/header.html'%}
+
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dildos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/modal.css' %}">
+  <link rel="stylesheet" href="{% static 'css/stylesCarrito.css' %}">
+  <link rel="stylesheet" href="{% static 'css/catalogo.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    /* Estilos para las estrellas (solo para modal) - Más grandes y mejorados */
+    .rating {
+      display: flex;
+      align-items: center;
+    }
+    .rating .star { /* Estrellas interactivas */
+        font-size: 24px; /* Un poco más pequeñas */
+        color: gold;
+        margin-right: 4px; /* Espaciado ajustado */
+        transition: color 0.2s ease, transform 0.1s ease;
+        cursor: pointer;
+        user-select: none;
+        /* No hay borde explícito, así que no es necesario eliminarlo si no está presente */
+    }
+    .average-rating .star { /* Estrellas visuales del promedio */
+        font-size: 28px; /* Mantener estas un poco más grandes para que destaquen */
+        color: gold;
+        margin-right: 8px;
+        transition: color 0.2s ease, transform 0.1s ease;
+        position: relative;
+        width: 1em;
+        overflow: hidden;
+        cursor: default; /* Asegurarse de que estas no sean interactivas */
+    }
+    .rating .star:hover {
+        color: orange;
+        transform: scale(1.1);
+    }
+    .rating .star.active {
+        color: orange;
+    }
+    /* Parciales para promedio (ej. 4.3 estrellas) */
+    .average-rating .star.partial {
+        background: linear-gradient(to right, orange var(--partial-width, 0%), gold var(--partial-width, 0%));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    /* Responsive: Más pequeñas en móviles */
+    @media (max-width: 768px) {
+        .rating .star, .average-rating .star {
+            font-size: 20px; /* Ajustar también para móviles */
+            margin-right: 2px;
+        }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR SUPERIOR -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a href="{% url 'Ladingpage' %}" style="color: #f5365c; cursor: pointer;" class="me-4">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <a class="navbar-brand me-2">
+      <img src="{% static 'img/carrito/Copia_de_Fantasia.png' %}" class="logoPrincipal" alt="Logo" style="height: 60px; width: 95px">
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Categorías -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href={% url 'lencerias' %}>Lencerías</a></li>
+        <li class="nav-item"><a class="nav-link" href={% url 'vibradores' %}>Vibradores</a></li>
+        <li class="nav-item"><a class="nav-link" href={% url 'disfraces' %}>Disfraces</a></li>
+        <li class="nav-item"><a class="nav-link active" href={% url 'dildos' %}>Dildos</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'productosCarrito' %}">Todos los productos</a></li>
+      </ul>
+
+      <!-- Buscador, Carrito, Usuario -->
+      <div class="d-flex align-items-center ms-auto">
+        <div class="search-container me-3">
+          <input id="query" type="search" class="form-control" placeholder="Buscar producto..." autocomplete="off">
+        </div>
+
+        {% if request.session.username %}
+          {% if request.session.role == 1 %}
+          <a href="{% url 'lista_notificaciones' %}" class="btn btn-outline-secondary position-relative">
+            <i class="fa-solid fa-bell"></i>
+            {% if pendientes > 0 %}
+            <span id="bell-counter" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem; padding:0.2em 0.4em;">
+              {{ pendientes }}
+            </span>
+            {% endif %}
+          </a>
+          {% endif %}
+        {% endif %}
+
+        <a href="{% url 'carrito' %}" class="btn btn-outline-secondary me-2 d-flex align-items-center">
+          <i class="fas fa-shopping-cart me-1"></i>
+          <span id="cartCount">0</span>
+        </a>
+
+        <a href="{% url 'perfiles' %}" class="btn btn-outline-secondary" style="color:#f5365c;">
+          <i class="fas fa-user"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- 🔑 USER INFO oculto -->
+{% if request.session.username %}
+  <div id="user-info" data-username="{{ request.session.username }}" class="d-none"></div>
+{% else %}
+  <div id="user-info" data-username="" class="d-none"></div>
+{% endif %}
+
+<!-- LISTA DE PRODUCTOS -->
+<h4 class="titulosLading" style="color:#f5365c; text-align:center;">
+  <hr> ✰ Dildos ✰
+  <p style="font-size: 14px; color: #000000;">¡Despierta tu Pasión!</p>
+  <hr>
+</h4>
+
+<div class="container mt-5">
+  <div class="row" id="productList">
+    {% for producto in productos %}
+    <div class="col-md-3 mb-4">
+      <div class="card"
+           data-id="{{ producto.IdProducto }}"
+           data-nombre="{{ producto.Nombre|escapejs }}"
+           data-precio="{{ producto.Precio }}"
+           data-imagen="{{ producto.Img.url }}"
+           data-descripcion="{{ producto.Descripcion|escapejs }}"
+           data-cantidad="{{ producto.Cantidad }}"
+           data-rating="{{ producto.rating|default:0 }}"
+           data-user-rating="{{ producto.user_rating|default:0 }}"
+           data-review-count="{{ producto.review_count|default:0 }}">
+        <img src="{{ producto.Img.url }}" class="card-img-top" alt="{{ producto.Nombre }}">
+        <div class="card-body">
+          <h5 class="card-title">{{ producto.Nombre }}</h5>
+          <p class="card-text">Precio: ${{ producto.Precio|floatformat:0 }}</p>
+          <p class="card-text text-success" style="font-size: 0.95em;">
+            Stock disponible: {{ producto.Cantidad }}
+          </p>
+          <button class="btn add-to-cart-btn" style="background-color:#f5365c; color:white;" {% if producto.Cantidad == 0 %}disabled{% endif %}>
+            <i class="fas fa-shopping-cart"></i> Añadir al carrito
+          </button>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No hay productos disponibles.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- mensaje de alerta al no encontrar producto -->
+<div id="noResultsMessage" class="text-center my-5 d-none">
+  <img src="{% static 'img/carrito/carrito.png' %}" alt="icono carrito" style="width: 80px;">
+  <p class="text-muted fs-5">No se encontraron productos</p>
+</div>
+
+<!-- MODAL DETALLES -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="productModalLabel">Detalles del Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" id="productDetails"></div>
+      <!-- Alerta para mensajes de calificación -->
+      <div id="mensaje-calificacion" class="alert d-none" role="alert"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn" id="add-to-cart-modal" style="background-color:#f5365c; color:white;">
+          Agregar al carrito <i class="fas fa-shopping-cart"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTA flotante -->
+<div id="alerta-carrito" class="alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 text-center d-none shadow rounded-3 px-4 py-2" style="z-index: 9999; font-size: 1rem;">
+  Producto agregado al carrito 💖
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/carrito/catalogo.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+</html>
