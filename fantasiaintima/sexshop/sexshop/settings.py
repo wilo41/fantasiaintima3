@@ -5,8 +5,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 👇 Cargar variables del archivo .env al entorno
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+# # 👇 Cargar variables del archivo .env al entorno
+# load_dotenv(os.path.join(BASE_DIR.parent, ".env"))
 
 def get_env_variable(var_name):
     """Obtiene una variable de entorno o lanza error si no existe."""
