@@ -278,3 +278,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Buscador
+  const searchInput = document.getElementById('query');
+searchInput.addEventListener('input', () => {
+  const filtro = searchInput.value.toLowerCase().trim();
+  const cards = document.querySelectorAll('#productList .card');
+  let encontrados = 0;
+
+  cards.forEach(card => {
+    const nombre = card.getAttribute('data-nombre').toLowerCase();
+    const visible = nombre.includes(filtro);
+    card.parentElement.style.display = visible ? '' : 'none';
+    if (visible) encontrados++;
+  });
+
+  const mensaje = document.getElementById('noResultsMessage');
+  mensaje.classList.toggle('d-none', encontrados > 0);
+    });

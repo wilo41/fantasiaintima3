@@ -98,12 +98,7 @@
         </a>
       </li>
 
-      <li class="nav-item">
-        <a class="nav-link" id="devoluciones-tab" data-toggle="tab" href="#devoluciones" role="tab">
-          <i class="fas fa-undo-alt mr-1"></i> Devoluciones
-          <span class="badge badge-pill badge-info ml-1" id="devoluciones-count">0</span>
-        </a>
-      </li>
+      
     </ul>
 
     </ul>
@@ -331,60 +326,7 @@
       </div>
 
 
-      <!-- Pestaña Devoluciones -->
-      <div class="tab-pane fade" id="devoluciones" role="tabpanel">
-  <div class="table-responsive">
-    <table class="table table-hover">
-      <thead class="thead-light">
-        <tr>
-          <th>ID Solicitud</th>
-          <th>ID Pedido</th>
-          <th>Motivo</th>
-          <th>Fecha</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="devoluciones-list">
-        {% if devoluciones %}
-          {% for dev in devoluciones %}
-            <tr>
-              <td>{{ dev.id }}</td>
-              <td>{{ dev.pedidoId }}</td>
-              <td>{{ dev.motivo }}</td>
-              <td>{{ dev.fecha|date:"d/m/Y" }}</td>
-              <td>
-                <span class="badge badge-estado
-                  {% if dev.estado == 'Aceptada' %}badge-success
-                  {% elif dev.estado == 'Cancelada' %}badge-cancelado
-                  {% else %}badge-espera{% endif %}">
-                  {{ dev.estado }}
-                </span>
-              </td>
-              <td>
-                <button class="btn btn-sm btn-info btn-ver-solicitud" data-id="{{ dev.id }}">
-                  <i class="fas fa-eye"></i>
-                </button>
-                {% if dev.estado != 'Aceptada' and dev.estado != 'Cancelada' %}
-                  <button class="btn btn-sm btn-success aceptar-dev" data-id="{{ dev.id }}">
-                    <i class="fas fa-check"></i> Aceptar
-                  </button>
-                  <button class="btn btn-sm btn-danger cancelar-dev" data-id="{{ dev.id }}">
-                    <i class="fas fa-times"></i> Cancelar
-                  </button>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
-        {% else %}
-          <tr>
-            <td colspan="6" class="text-center">No hay devoluciones.</td>
-          </tr>
-        {% endif %}
-      </tbody>
-    </table>
-  </div>
-</div>
+      
 
 
     </div>
@@ -636,159 +578,7 @@ function cambiarEstadoPedido(button, codigo, estado) {
             });
     }
 
-      document.addEventListener('DOMContentLoaded', function () {
-  // Simula rol admin (cámbialo por tu lógica real si tienes sesión)
-  const esAdmin = true;
-
-  function cargarDevolucionesSolicitud() {
-    const tbody = document.getElementById('devoluciones-list');
-    const count = document.getElementById('devoluciones-count');
-    if (!tbody) return;
-
-    // Mostrar loading
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando devoluciones...</td></tr>';
-
-    // Cargar devoluciones desde el backend
-    fetch('/obtener-devoluciones-usuario/', {
-      method: 'GET',
-      headers: {
-        'X-CSRFToken': getCookie('csrftoken')
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        const devoluciones = data.devoluciones;
-        
-        if (count) count.textContent = devoluciones.length;
-        
-        if (devoluciones.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="text-center">No hay devoluciones.</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = '';
-        devoluciones.forEach((dev, idx) => {
-          tbody.innerHTML += `
-            <tr>
-              <td>${dev.id}</td>
-              <td>${dev.pedidoId}</td>
-              <td>${dev.motivo}</td>
-              <td>${new Date(dev.fecha).toLocaleDateString()}</td>
-              <td>
-                <span class="badge badge-estado ${
-                  dev.estado === 'Aceptada' ? 'badge-success' :
-                  dev.estado === 'Cancelada' ? 'badge-cancelado' :
-                  'badge-espera'
-                }">${dev.estado || 'En proceso'}</span>
-              </td>
-              <td>
-                <button class="btn btn-sm btn-info btn-ver-solicitud" data-id="${dev.id}">
-                  <i class="fas fa-eye"></i>
-                </button>
-                ${
-                  esAdmin && dev.estado !== 'Aceptada' && dev.estado !== 'Cancelada'
-                    ? `
-                      <button class="btn btn-sm btn-success aceptar-dev" data-id="${dev.id}">
-                        <i class="fas fa-check"></i> Aceptar
-                      </button>
-                      <button class="btn btn-sm btn-danger cancelar-dev" data-id="${dev.id}">
-                        <i class="fas fa-times"></i> Cancelar
-                      </button>
-                    `
-                    : ''
-                }
-              </td>
-            </tr>
-          `;
-        });
-
-        // Botones aceptar/cancelar
-        document.querySelectorAll('.aceptar-dev').forEach(btn => {
-          btn.onclick = function() {
-            const devId = this.getAttribute('data-id');
-            cambiarEstadoDevolucion(devId, 'Aceptada');
-          };
-        });
-        
-        document.querySelectorAll('.cancelar-dev').forEach(btn => {
-          btn.onclick = function() {
-            const devId = this.getAttribute('data-id');
-            cambiarEstadoDevolucion(devId, 'Cancelada');
-          };
-        });
-
-        // Botón ver solicitud
-        document.querySelectorAll('.btn-ver-solicitud').forEach(btn => {
-          btn.onclick = function() {
-            const devId = this.getAttribute('data-id');
-            const dev = devoluciones.find(d => d.id == devId);
-            if (dev) {
-              Swal.fire({
-                title: `Detalle de devolución #${dev.id}`,
-                html: `
-                  <b>Pedido:</b> ${dev.pedidoId}<br>
-                  <b>Motivo:</b> ${dev.motivo}<br>
-                  <b>Estado:</b> ${dev.estado}<br>
-                  <b>Fecha:</b> ${new Date(dev.fecha).toLocaleDateString()}<br>
-                  <b>Cantidad:</b> ${dev.cantidad}<br>
-                  <b>Descripción:</b> ${dev.descripcion || 'Sin descripción'}<br>
-                `,
-                icon: 'info'
-              });
-            }
-          };
-        });
-      } else {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error al cargar devoluciones: ${data.error}</td></tr>`;
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error de conexión al cargar devoluciones</td></tr>`;
-    });
-  }
-
-  function cambiarEstadoDevolucion(devId, nuevoEstado) {
-    fetch(`/cambiar-estado-devolucion/${devId}/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ estado: nuevoEstado })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        Swal.fire({
-          title: '¡Éxito!',
-          text: data.message,
-          icon: 'success'
-        }).then(() => {
-          cargarDevolucionesSolicitud();
-        });
-      } else {
-        Swal.fire({
-          title: 'Error',
-          text: data.error || 'Error al cambiar el estado',
-          icon: 'error'
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Error:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Error de conexión al cambiar el estado',
-        icon: 'error'
-      });
-    });
-  }
-
-  // Solo para la pestaña devoluciones
-  cargarDevolucionesSolicitud();
-});
+    
   </script>
 </body>
 </html>
