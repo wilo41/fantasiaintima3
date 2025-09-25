@@ -748,30 +748,14 @@ def insertarproducto(request):
             messages.error(request, "Ya existe un producto con ese nombre en la misma subcategoría.")
             return redirect('crudProductos')
 
-        # Normalizar tipos (evita enviar strings a campos numéricos)
-        try:
-            precio_val = float(precio) if precio not in (None, '') else 0.0
-        except ValueError:
-            messages.error(request, "Precio inválido.")
-            return redirect('crudProductos')
-        try:
-            cantidad_val = int(cantidad) if cantidad not in (None, '') else 0
-        except ValueError:
-            messages.error(request, "Cantidad inválida.")
-            return redirect('crudProductos')
-
-        # Valor por defecto para FechaVence: hoy (si prefieres otro comportamiento, ver alternativas abajo)
-        fecha_vence_default = timezone.now().date()
-
         # Crear producto
         nuevo_producto = producto(
             Nombre=nombre,
             Descripcion=descripcion,
-            Precio=precio_val,
-            Cantidad=cantidad_val,
+            Precio=precio,
+            Cantidad=cantidad,
             IdSubCategoria=subcategoria.objects.get(IdSubCategoria=id_subcategoria),
-            Img=img,
-            FechaVence=fecha_vence_default,
+            Img=img
         )
         nuevo_producto.save()
         messages.success(request, "Producto registrado exitosamente")
