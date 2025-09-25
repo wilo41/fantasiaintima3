@@ -189,3 +189,19 @@ PAYPAL_RECEIVER_EMAIL = 'sb-ryrqh45119542@business.example.com'  # Tu correo de 
 PAYPAL_TEST = True
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console':{'class':'logging.StreamHandler'},
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+        # tu módulo
+        'tu_aplicacion': {'handlers': ['console'], 'level': 'DEBUG', 'propagate': False},
+    },
+}
