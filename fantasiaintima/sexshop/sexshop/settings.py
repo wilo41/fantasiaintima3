@@ -148,8 +148,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 # Autenticación con Google: leer desde variables de entorno
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = get_env_variable("GOOGLE_OAUTH_CLIENT_ID")
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = get_env_variable("GOOGLE_OAUTH_CLIENT_SECRET")
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get("GOOGLE_OAUTH_CLIENT_ID", "")
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get("GOOGLE_OAUTH_CLIENT_SECRET", "")
 
 
 # Clave por defecto para modelos
