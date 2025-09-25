@@ -384,92 +384,113 @@ def logout(request):
 
 
 #region contrasena
+import threading
+import logging
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.contrib import messages
+# importa tus modelos y utilidades
+# from .models import usuario, CodigoVerificacion
+# from django.contrib.auth.hashers import make_password, check_password
+# from django.core.validators import validate_email
+# from django.core.exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
+
+def _enviar_email_async(asunto, mensaje_html, from_email, destinatario):
+    """Enviar correo en background para no bloquear la request HTTP."""
+    try:
+        msg = EmailMessage(
+            asunto,
+            mensaje_html,
+            from_email,
+            [destinatario],
+        )
+        msg.content_subtype = "html"
+        msg.send(fail_silently=False)
+        logger.info("Correo de recuperación enviado a %s", destinatario)
+    except Exception as e:
+        logger.exception("Error enviando correo de recuperación a %s: %s", destinatario, e)
+
+
 def solicitar_recuperacion(request):
+    """
+    Vista para solicitar código de recuperación.
+    El envío del correo se hace en un hilo para evitar timeouts del worker.
+    """
     if request.method == 'POST':
-        email = request.POST.get('email')
-        
+        email = (request.POST.get('email') or '').strip()
+        logger.info("Solicitud de recuperación iniciada para email=%s", email)
+
+        if not email:
+            messages.error(request, "Debes ingresar un correo.")
+            return render(request, 'login/recuperarcontraseña.html')
+
+        # Validación rápida del formato del email (no imprescindible)
+        try:
+            validate_email(email)
+        except Exception:
+            messages.error(request, "El correo ingresado no tiene un formato válido.")
+            return render(request, 'login/recuperarcontraseña.html')
+
+        # Buscar usuario
         try:
             user = usuario.objects.get(Correo=email)
-            
-            # Generar código
-            codigo_obj = CodigoVerificacion.generar_codigo(user)
-            
-            # Enviar correo con el código (versión visual con HTML)
-            asunto = 'Código de recuperación de contraseña'
-
-            mensaje_html = f"""
-            <html>
-              <head>
-                <style>
-                  body {{
-                    font-family: Arial, sans-serif;
-                    background-color: #f9f9f9;
-                    padding: 20px;
-                  }}
-                  .container {{
-                    background-color: #ffffff;
-                    border-radius: 10px;
-                    padding: 20px;
-                    max-width: 600px;
-                    margin: auto;
-                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                  }}
-                  .header {{
-                    color: #f5365c;
-                    text-align: center;
-                  }}
-                  .codigo {{
-                    font-size: 28px;
-                    font-weight: bold;
-                    color: #f5365c;
-                    text-align: center;
-                    margin: 30px 0;
-                  }}
-                  .footer {{
-                    font-size: 13px;
-                    color: #888;
-                    text-align: center;
-                    margin-top: 40px;
-                  }}
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <h2 class="header">Recuperación de Contraseña</h2>
-                  <p>Hola,</p>
-                  <p>Recibimos una solicitud para recuperar el acceso a tu cuenta en <strong>Fantasía Íntima</strong>.</p>
-                  <p>Ingresa el siguiente código en la página para continuar con el proceso:</p>
-                  
-                  <div class="codigo">{codigo_obj.codigo}</div>
-                  
-                  <p>Este código estará disponible durante los próximos <strong>15 minutos</strong>.</p>
-                  <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
-
-                  <div class="footer">
-                    &copy; 2025 Fantasía Íntima. Todos los derechos reservados.
-                  </div>
-                </div>
-              </body>
-            </html>
-            """
-
-            send_mail(
-                asunto,
-                '',  # Texto plano vacío (puedes incluir versión simple si quieres)
-                'store.fantasia.intima@gmail.com',
-                [email],
-                fail_silently=False,
-                html_message=mensaje_html  # Aquí enviamos el mensaje bonito
-            )
-            
-            request.session['email_recuperacion'] = email
-            messages.success(request, 'Se ha enviado un código de verificación a tu correo.')
-            return redirect('verificar_codigo')
-        
         except usuario.DoesNotExist:
+            logger.info("Email no encontrado en DB: %s", email)
             messages.error(request, 'No existe una cuenta asociada a ese correo.')
-    
+            return render(request, 'login/recuperarcontraseña.html')
+
+        # Generar código (asegúrate de que este método no haga llamadas lentas)
+        try:
+            logger.debug("Generando CodigoVerificacion para user id=%s", user.IdUsuario)
+            codigo_obj = CodigoVerificacion.generar_codigo(user)
+            logger.debug("Codigo generado: %s", getattr(codigo_obj, 'codigo', None))
+        except Exception:
+            logger.exception("Error al generar código para %s", email)
+            messages.error(request, 'Ocurrió un error interno. Intenta de nuevo más tarde.')
+            return render(request, 'login/recuperarcontraseña.html')
+
+        # Preparar HTML del correo (mantén tu plantilla HTML)
+        mensaje_html = f"""
+        <html>
+          <head>
+            <style>/* tu CSS... */</style>
+          </head>
+          <body>
+            <div class="container">
+              <h2 class="header">Recuperación de Contraseña</h2>
+              <p>Hola,</p>
+              <p>Recibimos una solicitud para recuperar el acceso a tu cuenta en <strong>Fantasía Íntima</strong>.</p>
+              <p>Ingresa el siguiente código en la página para continuar con el proceso:</p>
+              <div class="codigo">{codigo_obj.codigo}</div>
+              <p>Este código estará disponible durante los próximos <strong>15 minutos</strong>.</p>
+            </div>
+          </body>
+        </html>
+        """
+
+        # Lanzar envío en background (hilo daemon)
+        try:
+            t = threading.Thread(
+                target=_enviar_email_async,
+                args=( 'Código de recuperación de contraseña', mensaje_html, settings.DEFAULT_FROM_EMAIL, email),
+                daemon=True
+            )
+            t.start()
+            logger.info("Hilo de envío iniciado para %s", email)
+        except Exception:
+            logger.exception("No se pudo iniciar hilo de envío para %s", email)
+            messages.warning(request, 'Hubo un problema al enviar el correo. Intenta más tarde.')
+
+        # Guardar en sesión y redirigir inmediatamente
+        request.session['email_recuperacion'] = email
+        messages.success(request, 'Se ha enviado un código de verificación a tu correo (revisa spam).')
+        return redirect('verificar_codigo')
+
     return render(request, 'login/recuperarcontraseña.html')
+
 
 
 def verificar_codigo(request):
@@ -727,14 +748,30 @@ def insertarproducto(request):
             messages.error(request, "Ya existe un producto con ese nombre en la misma subcategoría.")
             return redirect('crudProductos')
 
+        # Normalizar tipos (evita enviar strings a campos numéricos)
+        try:
+            precio_val = float(precio) if precio not in (None, '') else 0.0
+        except ValueError:
+            messages.error(request, "Precio inválido.")
+            return redirect('crudProductos')
+        try:
+            cantidad_val = int(cantidad) if cantidad not in (None, '') else 0
+        except ValueError:
+            messages.error(request, "Cantidad inválida.")
+            return redirect('crudProductos')
+
+        # Valor por defecto para FechaVence: hoy (si prefieres otro comportamiento, ver alternativas abajo)
+        fecha_vence_default = timezone.now().date()
+
         # Crear producto
         nuevo_producto = producto(
             Nombre=nombre,
             Descripcion=descripcion,
-            Precio=precio,
-            Cantidad=cantidad,
+            Precio=precio_val,
+            Cantidad=cantidad_val,
             IdSubCategoria=subcategoria.objects.get(IdSubCategoria=id_subcategoria),
-            Img=img
+            Img=img,
+            FechaVence=fecha_vence_default,
         )
         nuevo_producto.save()
         messages.success(request, "Producto registrado exitosamente")
