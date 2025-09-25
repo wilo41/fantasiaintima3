@@ -174,10 +174,12 @@ SOCIAL_AUTH_PIPELINE = (
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587 #es el que utiliza el protocolo smtp
+EMAIL_PORT = 587
+
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "store.fantasia.intima@gmail.com")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").replace(" ", "")
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
 
