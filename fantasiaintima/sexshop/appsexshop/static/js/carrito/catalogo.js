@@ -279,7 +279,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Buscador
+
+
+  // Buscador
   const searchInput = document.getElementById('query');
 searchInput.addEventListener('input', () => {
   const filtro = searchInput.value.toLowerCase().trim();
@@ -294,8 +296,11 @@ searchInput.addEventListener('input', () => {
   });
 
   const mensaje = document.getElementById('noResultsMessage');
-  mensaje.classList.toggle('d-none', encontrados > 0);
-    });
+  mensaje.classList.toggle('d-none', encontrados > 0);
+    });
+
+    
+
 window.addEventListener("storage", () => {
   actualizarIconoCarrito();
 });

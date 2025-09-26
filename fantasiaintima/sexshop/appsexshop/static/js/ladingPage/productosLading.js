@@ -69,10 +69,11 @@ function actualizarReviewCount(idProducto, nuevoReviewCount) {
 function showProductDetails(card) {
     const idProducto = card.getAttribute('data-id');
     const nombre = card.getAttribute('data-nombre');
-    const precio = parseFloat(card.getAttribute('data-precio')).toLocaleString();
+    const precio = parseFloat(card.getAttribute('data-precio'));
+    const precioTexto = precio.toLocaleString();
     const imagen = card.getAttribute('data-imagen');
     const descripcion = card.getAttribute('data-descripcion');
-    const cantidad = card.getAttribute('data-cantidad');
+    const cantidad = parseInt(card.getAttribute('data-cantidad'));
     const rating = parseFloat(card.getAttribute('data-rating')) || 4;
 
     const ratingStars = getStarsHTML(rating);
@@ -87,7 +88,7 @@ function showProductDetails(card) {
                 <div class="stars">${ratingStars}</div>
                 <span class="ms-2 rating-text">(${rating.toFixed(1)})</span>
             </div>
-            <h4 class="price">$${precio}</h4>
+            <h4 class="price">$${precioTexto}</h4>
             <p>${descripcion}</p>
             <p class="text-success">Envío gratis a todo el país</p>
             <div class="d-flex align-items-center mb-3">
@@ -99,13 +100,15 @@ function showProductDetails(card) {
         </div>
     `;
 
-    // Eventos para aumentar/disminuir cantidad
+    // Eventos para cantidad
     const increaseBtn = document.getElementById("increaseQuantity");
     const decreaseBtn = document.getElementById("decreaseQuantity");
     const quantityInput = document.getElementById("productQuantity");
 
     increaseBtn.addEventListener("click", () => {
-        quantityInput.value = parseInt(quantityInput.value) + 1;
+        if (parseInt(quantityInput.value) < cantidad) {
+            quantityInput.value = parseInt(quantityInput.value) + 1;
+        }
     });
 
     decreaseBtn.addEventListener("click", () => {
@@ -114,25 +117,30 @@ function showProductDetails(card) {
         }
     });
 
+    // Botón agregar al carrito
     const addToCartModalBtn = document.getElementById('add-to-cart-modal');
-    addToCartModalBtn.disabled = false;
+    if (cantidad > 0) {
+        addToCartModalBtn.disabled = false;
+        addToCartModalBtn.innerHTML = `Agregar al carrito <i class="fas fa-shopping-cart"></i>`;
+        addToCartModalBtn.onclick = () => {
+            const quantity = parseInt(quantityInput.value);
+            agregarAlCarrito(idProducto, nombre, precio, quantity, imagen, descripcion);
 
-    addToCartModalBtn.onclick = () => {
-        const quantity = quantityInput.value;
-        console.log(`Agregar desde modal: ${nombre} x${quantity}`);
-    };
+            // mostrar alerta
+            const alerta = document.getElementById("alerta-carrito");
+            alerta.classList.remove("d-none");
+            setTimeout(() => alerta.classList.add("d-none"), 2000);
 
-    const stars = document.querySelectorAll('.stars .star');
-    stars.forEach(star => {
-        star.addEventListener('click', () => {
-            const selectedRating = star.getAttribute('data-value');
-            stars.forEach(s => {
-                s.classList.toggle('active', s.getAttribute('data-value') <= selectedRating);
-            });
-            enviarCalificacion(idProducto, selectedRating);
-        });
-    });
+            // cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('productModal'));
+        };
+    } else {
+        addToCartModalBtn.disabled = true;
+        addToCartModalBtn.innerHTML = `Agregar al carrito <i class="fas fa-shopping-cart"></i>`;
+        addToCartModalBtn.onclick = null;
+    }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.card').forEach(card => {
