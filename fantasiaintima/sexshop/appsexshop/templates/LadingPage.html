@@ -382,20 +382,136 @@
             <div class="col-12 col-md-6 col-lg-3 mb-3">
                 <h5 style="font-size: 22px; text-align: center;">Contacto</h5>
                 <ul class="list-unstyled">
-                    <li style="text-align: center;">Email: FantasiaIntima@gmail.com</li>
+                    <li style="text-align: center;">Email: store.fantasia.intima@gmail.com</li>
                     <li style="text-align: center;">Teléfono: +57 301 456 789</li>
                     <li style="text-align: center;">Dirección: Calle 54, Medellin</li>
                 </ul>
             </div>
-            <!-- Aviso Legal -->
-            <div class="col-12 col-md-6 col-lg-3 mb-3">
-                <h5 style="font-size: 22px; text-align: center;">Aviso Legal</h5>
-                <ul class="list-unstyled">
-                    <p style="text-align: center;">Este sitio esta dirigido a mayores de 18 años</p>
-                    <li style="text-align: center;"><a href="#" class="text-light">Términos y Condiciones</a></li>
-                    <li style="text-align: center;"><a href="#" class="text-light">Política de Privacidad</a></li>
-                </ul>
-            </div>
+            
+<!-- Aviso Legal -->
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+  <h5 style="font-size: 22px; text-align: center;">Aviso Legal</h5>
+  <ul class="list-unstyled">
+    <p style="text-align: center;">Este sitio está dirigido a mayores de 18 años</p>
+
+    <li style="text-align: center;">
+      <a href="#" class="text-light" data-bs-toggle="modal" data-bs-target="#terminosModal">
+        Términos y Condiciones
+      </a>
+    </li>
+
+    <li style="text-align: center;">
+      <a href="#" class="text-light" data-bs-toggle="modal" data-bs-target="#privacidadModal">
+        Política de Privacidad
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+<!-- Modal Términos y Condiciones -->
+<div class="modal fade" id="terminosModal" tabindex="-1" aria-labelledby="terminosModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      <div class="modal-header bg-dark text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="terminosModalLabel">📜 Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body p-4"
+           style="max-height: 65vh; overflow-y: auto; line-height: 1.8; color: #333; text-align: justify; white-space: normal; display: block;">
+        
+        <!-- Cada sección va en vertical -->
+        <div class="mb-3">
+          <h6 class="fw-bold">1. Uso de la Plataforma</h6>
+          <p>El usuario acepta que el uso de la plataforma implica la aceptación de las políticas establecidas.</p>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-bold">2. Compras y Pagos</h6>
+          <p>Los productos adquiridos no tienen devolución salvo defecto de fábrica.</p>
+          <p>Todos los pagos deben realizarse por los métodos disponibles en la tienda.</p>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-bold">3. Privacidad</h6>
+          <p>La información proporcionada por el usuario será tratada de acuerdo con la política de privacidad.</p>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-bold">4. Responsabilidades</h6>
+          <p>La empresa no se hace responsable por mal uso de los productos adquiridos ni por retrasos ocasionados por terceros.</p>
+        </div>
+
+        <div class="alert alert-warning mt-4">
+          ⚠️ Recuerda Si realizas tu pedido después de las 12:00 p. m., la fecha de entrega seleccionada se ajustará automáticamente para el día siguiente.
+          <br>
+          Para recibir tu pedido el mismo día seleccionado, debes realizarlo antes de las 12:00 p. m.
+        </div>
+      </div>
+
+      <div class="modal-footer bg-light rounded-bottom-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Modal Política de Privacidad -->
+<div class="modal fade" id="privacidadModal" tabindex="-1" aria-labelledby="privacidadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      
+      <!-- Encabezado -->
+      <div class="modal-header bg-dark text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="privacidadModalLabel">🔒 Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Contenido -->
+      <div class="modal-body p-4"
+           style="max-height: 65vh; overflow-y: auto; line-height: 1.8; color: #333; text-align: justify; white-space: normal; display:block;">
+        
+        <div class="mb-3">
+          <h6 class="fw-bold">1. Información Recopilada</h6>
+          <p>Recopilamos información personal como nombre, correo electrónico, dirección y número de teléfono cuando el usuario realiza un registro o compra en nuestra plataforma.</p>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-bold">2. Uso de la Información</h6>
+          <p>La información recopilada se utiliza para procesar pedidos, brindar soporte al cliente y mejorar la experiencia en la plataforma.</p>
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-bold">3. Compartir Información</h6>
+          <p>No compartimos la información personal de nuestros usuarios con terceros, salvo cuando sea necesario para cumplir con obligaciones legales o procesar pagos.</p>
+        </div>
+
+
+
+        <div class="mb-3">
+          <h6 class="fw-bold">5. Derechos del Usuario</h6>
+          <p>El usuario puede solicitar en cualquier momento la modificación o eliminación de sus datos personales, de acuerdo con la normativa vigente.</p>
+        </div>
+
+        <div class="alert alert-info mt-4">
+       
+          <h6 class="fw-bold"> Derechos del Usuario</h6>
+          <p>   ℹ️ El usuario puede solicitar en cualquier momento la modificación o eliminación de sus datos personales, de acuerdo con la normativa vigente.</p>
+        </div>
+      </div>
+
+      <!-- Pie -->
+      <div class="modal-footer bg-light rounded-bottom-4">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+            
             <!-- Envíos y Entregas -->
             <div class="col-12 col-md-6 col-lg-3 mb-3">
                 <h5 style="font-size: 22px; text-align: center;">Envíos y Entregas</h5>
@@ -454,12 +570,7 @@
 <script src="{% static 'js/ladingPage/productosLading.js' %}"></script>
 
 <script>
-  
-// ============================
-// carrito.js / catalogo.js
-// ============================
-
-const carritoKey = 'carrito';
+ const carritoKey = 'carrito';
 
 // ============================
 // Funciones LocalStorage
@@ -480,15 +591,23 @@ const actualizarIconoCarrito = () => {
 };
 
 // ============================
-// Agregar al Carrito
+// Agregar al Carrito (con validación de stock)
 // ============================
 function agregarAlCarrito(idProducto, nombre, precio, cantidad, imagen, descripcion) {
     const carrito = obtenerCarrito();
-    let prod = carrito.find(p => p.IdProducto == idProducto);
-    let stock = 1;
+    let stock = 0;
 
+    // Tomar stock desde la card
     const card = document.querySelector(`.card[data-id="${idProducto}"]`);
-    if (card) stock = parseInt(card.getAttribute('data-cantidad')) || 1;
+    if (card) stock = parseInt(card.getAttribute('data-cantidad')) || 0;
+
+    // 🚫 Si no hay stock, no agregamos y mostramos alerta de error
+    if (stock <= 0) {
+        Swal.fire('Sin stock', 'Este producto no tiene stock disponible.', 'error');
+        return; // <- cortamos ejecución
+    }
+
+    let prod = carrito.find(p => p.IdProducto == idProducto);
 
     if (prod && prod.cantidad >= stock) {
         Swal.fire('Stock insuficiente', 'Ya agregaste la cantidad máxima disponible.', 'warning');
@@ -504,18 +623,14 @@ function agregarAlCarrito(idProducto, nombre, precio, cantidad, imagen, descripc
 
     guardarCarrito(carrito);
     actualizarIconoCarrito();
+    mostrarAlertaCarrito(); // ✅ solo se muestra si se agregó con éxito
 }
 
 // ============================
-// Alerta Producto Agregado
-// ============================
-// ============================
-// Alerta Producto Agregado
+// Alerta flotante
 // ============================
 function mostrarAlertaCarrito() {
     let alerta = document.getElementById("alerta-carrito");
-
-    // Si no existe, creamos un div flotante temporal
     if (!alerta) {
         alerta = document.createElement("div");
         alerta.id = "alerta-carrito";
@@ -525,10 +640,9 @@ function mostrarAlertaCarrito() {
         document.body.appendChild(alerta);
     }
 
-    alerta.classList.remove("d-none");      // Mostrar
-    alerta.style.opacity = 1;               // Asegurar visibilidad
+    alerta.classList.remove("d-none");
+    alerta.style.opacity = 1;
 
-    // Desaparece después de 2 segundos
     setTimeout(() => {
         alerta.style.transition = "opacity 0.5s";
         alerta.style.opacity = 0;
@@ -558,7 +672,7 @@ function mostrarDetallesProducto(producto) {
                     <input type="number" id="productQuantity" value="1" min="1" max="${producto.cantidad}" class="mx-2" style="width: 60px; text-align: center;">
                     <button class="btn btn-outline-secondary" id="increaseQuantity">+</button>
                 </div>
-                <button class="btn btn-danger w-100 mt-2" id="add-to-cart-modal">
+                <button class="btn btn-danger w-100 mt-2" id="add-to-cart-modal" ${producto.cantidad <= 0 ? 'disabled' : ''}>
                     <i class="fas fa-shopping-cart"></i> Añadir al carrito
                 </button>
             </div>
@@ -581,9 +695,13 @@ function mostrarDetallesProducto(producto) {
     const newAddBtn = document.getElementById('add-to-cart-modal');
 
     newAddBtn.addEventListener('click', () => {
+        // 🚫 Evita agregar si no hay stock
+        if (producto.cantidad <= 0) {
+            Swal.fire('Sin stock', 'Este producto no tiene stock disponible.', 'error');
+            return;
+        }
         const cantidad = parseInt(quantityInput.value) || 1;
         agregarAlCarrito(producto.id, producto.nombre, parseFloat(producto.precio), cantidad, producto.imagen, producto.descripcion);
-        mostrarAlertaCarrito();
     });
 
     const modal = new bootstrap.Modal(document.getElementById('productModal'));
@@ -591,7 +709,7 @@ function mostrarDetallesProducto(producto) {
 }
 
 // ============================
-// Buscador Seguro
+// Buscador (igual que antes)
 // ============================
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('query');
@@ -653,11 +771,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <p class="card-text text-success" style="font-size: 0.95em;">
                                         Stock disponible: ${producto.cantidad}
                                     </p>
-                                    <div class="rating mb-3">
-                                        ${[5,4,3,2,1].map(i => `
-                                            <input value="${i}" name="rate${producto.id}" id="star${producto.id}${i}" type="radio" ${rating >= i ? 'checked' : ''}>
-                                        `).join('')}
-                                    </div>
                                 </div>
                                 <button class="btn btn-danger add-to-cart-btn mt-auto w-100" ${producto.cantidad == 0 ? 'disabled' : ''}>
                                     <i class="fas fa-shopping-cart"></i> Añadir al carrito
@@ -692,24 +805,24 @@ document.addEventListener('click', e => {
     if (btn) {
         const card = btn.closest('.card');
         if (card) {
+            const stock = parseInt(card.getAttribute('data-cantidad')) || 0;
+            if (stock <= 0) {
+                Swal.fire('Sin stock', 'Este producto no tiene stock disponible.', 'error');
+                return;
+            }
             const producto = {
                 id: card.getAttribute('data-id'),
                 nombre: card.getAttribute('data-nombre'),
                 descripcion: card.getAttribute('data-descripcion'),
                 precio: parseFloat(card.getAttribute('data-precio')),
                 cantidad: 1,
-                stock: parseInt(card.getAttribute('data-cantidad')) || 1,
                 imagen: card.getAttribute('data-imagen')
             };
             agregarAlCarrito(producto.id, producto.nombre, producto.precio, producto.cantidad, producto.imagen, producto.descripcion);
-            mostrarAlertaCarrito();
         }
     }
 });
 
-// ============================
-// Inicialización
-// ============================
 actualizarIconoCarrito();
 
 

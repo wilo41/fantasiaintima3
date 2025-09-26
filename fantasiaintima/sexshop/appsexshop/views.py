@@ -7,21 +7,19 @@ from django.db.models import Q
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.utils import timezone
-from .models import usuario, CodigoVerificacion
+from .models import usuario, CodigoVerificacion, CarritoCompras
 from django.db.models import Avg
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 import re
+from django.db import models
 import json
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.urls import reverse
-from datetime import datetime, timedelta
-from datetime import datetime, timedelta
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.contrib.auth.hashers import check_password
 from datetime import datetime, timedelta
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
@@ -42,13 +40,13 @@ from django.http import HttpResponseBadRequest
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import redirect, render
-from django.views.decorators.csrf import csrf_exempt
 import json
 import logging
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.db import transaction
-from django.urls import reverse
+from django.db.models import Avg, Count
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 #region landing page
 def LadingPage(request):
@@ -145,7 +143,6 @@ def crudCategorias(request):
     return render(request, 'crud/categorias.html')
 # endregion
 
-
 # region subcategorias
 def listadosubcategorias(request):
     subcategorias_list = subcategoria.objects.all().order_by('-IdSubCategoria')
@@ -226,7 +223,6 @@ def crudSubCategorias(request):
     return render(request, 'crud/subcategorias.html', {'subcategorias': subcategorias, 'categorias': categorias})
 #endregion
 
-
 # region login
 def validar_registro_usuario(data):
     campos_obligatorios = [
@@ -238,22 +234,22 @@ def validar_registro_usuario(data):
         'Contrasena',
     ]
 
-    # Verificar campos vacíos
+
     for campo in campos_obligatorios:
         valor = data.get(campo, '').strip()
         if not valor:
             return f"El campo '{campo}' es obligatorio y no puede estar vacío."
 
-    # Validar formato de correo (opcional)
+
     correo = data.get('Correo', '').strip()
     if '@' not in correo or '.' not in correo:
         return "El correo ingresado no es válido."
 
-    # Verificar que el correo no exista ya (único)
+ 
     if usuario.objects.filter(Correo=correo).exists():
         return "Ya existe un usuario registrado con ese correo."
     
-    # Validar contraseña
+
     contrasena = data.get('Contrasena', '')
     
     if len(contrasena) < 8:
@@ -265,7 +261,7 @@ def validar_registro_usuario(data):
     if not re.search(r'[^A-Za-z0-9]', contrasena):
         return "La contraseña debe contener al menos un carácter especial."
 
-    return None  # Todo está bien
+    return None 
 
 
 def registro(request):
@@ -275,10 +271,10 @@ def registro(request):
         if error:
             messages.error(request, error)
             return render(request, 'login/registro.html', {
-                'valores': data  # Esto permite mantener los campos ya ingresados
+                'valores': data  
             })
 
-        # Usuario duplicado (case sensitive permitido)
+       
         nombre_usuario = request.POST.get('NombreUsuario').strip()
         if usuario.objects.filter(NombreUsuario=nombre_usuario).exists():
             messages.error(request, "El usuario ya existe")
@@ -307,7 +303,7 @@ def login(request):
     bloqueado = request.session.get('login_bloqueado', False)
     bloqueado_hasta = request.session.get('bloqueado_hasta')
 
-    # --- Validar si el bloqueo sigue vigente ---
+  
     if bloqueado and bloqueado_hasta:
         desbloqueo = datetime.fromisoformat(bloqueado_hasta)
         ahora = datetime.now()
@@ -319,7 +315,7 @@ def login(request):
                 'tiempo_restante': tiempo_restante
             })
         else:
-            # Se levanta el bloqueo al pasar el tiempo
+        
             request.session['login_bloqueado'] = False
             request.session['bloqueado_hasta'] = None
             request.session['login_intentos'] = 0
@@ -328,7 +324,7 @@ def login(request):
         correo = request.POST.get('correo', '').strip()
         contrasena = request.POST.get('contrasena', '').strip()
 
-        # --- Validación de campos vacíos ---
+    
         if not correo and not contrasena:
             return render(request, 'login/login.html', {'error': 'Campos obligatorios'})
         if not correo:
@@ -336,13 +332,13 @@ def login(request):
         if not contrasena:
             return render(request, 'login/login.html', {'error': 'La contraseña es obligatoria'})
 
-        # --- Validación de formato de correo ---
+       
         try:
             validate_email(correo)
         except ValidationError:
             return render(request, 'login/login.html', {'error': 'Credenciales inválidas'})
 
-        # --- Usuario no registrado ---
+
         try:
             user = usuario.objects.get(Correo=correo)
         except usuario.DoesNotExist:
@@ -350,7 +346,7 @@ def login(request):
         
 
 
-        # --- Contraseña incorrecta ---
+
         if not (user.Contrasena == contrasena or check_password(contrasena, user.Contrasena)):
             intentos += 1
             request.session['login_intentos'] = intentos
@@ -364,7 +360,7 @@ def login(request):
                 })
             return render(request, 'login/login.html', {'error': 'Credenciales inválidas'})
 
-        # --- Login exitoso ---
+    
         request.session['user_id'] = user.IdUsuario
         request.session['username'] = user.NombreUsuario
         request.session['nombre'] = f"{user.PrimerNombre} {user.PrimerApellido}"
@@ -382,115 +378,93 @@ def logout(request):
     return redirect('Ladingpage')  
 # endregion
 
-
 #region contrasena
-import threading
-import logging
-from django.core.mail import EmailMessage
-from django.conf import settings
-from django.shortcuts import render, redirect
-from django.contrib import messages
-# importa tus modelos y utilidades
-# from .models import usuario, CodigoVerificacion
-# from django.contrib.auth.hashers import make_password, check_password
-# from django.core.validators import validate_email
-# from django.core.exceptions import ValidationError
-
-logger = logging.getLogger(__name__)
-
-def _enviar_email_async(asunto, mensaje_html, from_email, destinatario):
-    """Enviar correo en background para no bloquear la request HTTP."""
-    try:
-        msg = EmailMessage(
-            asunto,
-            mensaje_html,
-            from_email,
-            [destinatario],
-        )
-        msg.content_subtype = "html"
-        msg.send(fail_silently=False)
-        logger.info("Correo de recuperación enviado a %s", destinatario)
-    except Exception as e:
-        logger.exception("Error enviando correo de recuperación a %s: %s", destinatario, e)
-
-
 def solicitar_recuperacion(request):
-    """
-    Vista para solicitar código de recuperación.
-    El envío del correo se hace en un hilo para evitar timeouts del worker.
-    """
     if request.method == 'POST':
-        email = (request.POST.get('email') or '').strip()
-        logger.info("Solicitud de recuperación iniciada para email=%s", email)
-
-        if not email:
-            messages.error(request, "Debes ingresar un correo.")
-            return render(request, 'login/recuperarcontraseña.html')
-
-        # Validación rápida del formato del email (no imprescindible)
-        try:
-            validate_email(email)
-        except Exception:
-            messages.error(request, "El correo ingresado no tiene un formato válido.")
-            return render(request, 'login/recuperarcontraseña.html')
-
-        # Buscar usuario
+        email = request.POST.get('email')
+        
         try:
             user = usuario.objects.get(Correo=email)
-        except usuario.DoesNotExist:
-            logger.info("Email no encontrado en DB: %s", email)
-            messages.error(request, 'No existe una cuenta asociada a ese correo.')
-            return render(request, 'login/recuperarcontraseña.html')
-
-        # Generar código (asegúrate de que este método no haga llamadas lentas)
-        try:
-            logger.debug("Generando CodigoVerificacion para user id=%s", user.IdUsuario)
+            
+            
             codigo_obj = CodigoVerificacion.generar_codigo(user)
-            logger.debug("Codigo generado: %s", getattr(codigo_obj, 'codigo', None))
-        except Exception:
-            logger.exception("Error al generar código para %s", email)
-            messages.error(request, 'Ocurrió un error interno. Intenta de nuevo más tarde.')
-            return render(request, 'login/recuperarcontraseña.html')
+            
+        
+            asunto = 'Código de recuperación de contraseña'
 
-        # Preparar HTML del correo (mantén tu plantilla HTML)
-        mensaje_html = f"""
-        <html>
-          <head>
-            <style>/* tu CSS... */</style>
-          </head>
-          <body>
-            <div class="container">
-              <h2 class="header">Recuperación de Contraseña</h2>
-              <p>Hola,</p>
-              <p>Recibimos una solicitud para recuperar el acceso a tu cuenta en <strong>Fantasía Íntima</strong>.</p>
-              <p>Ingresa el siguiente código en la página para continuar con el proceso:</p>
-              <div class="codigo">{codigo_obj.codigo}</div>
-              <p>Este código estará disponible durante los próximos <strong>15 minutos</strong>.</p>
-            </div>
-          </body>
-        </html>
-        """
+            mensaje_html = f"""
+            <html>
+              <head>
+                <style>
+                  body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f9f9f9;
+                    padding: 20px;
+                  }}
+                  .container {{
+                    background-color: #ffffff;
+                    border-radius: 10px;
+                    padding: 20px;
+                    max-width: 600px;
+                    margin: auto;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                  }}
+                  .header {{
+                    color: #f5365c;
+                    text-align: center;
+                  }}
+                  .codigo {{
+                    font-size: 28px;
+                    font-weight: bold;
+                    color: #f5365c;
+                    text-align: center;
+                    margin: 30px 0;
+                  }}
+                  .footer {{
+                    font-size: 13px;
+                    color: #888;
+                    text-align: center;
+                    margin-top: 40px;
+                  }}
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <h2 class="header">Recuperación de Contraseña</h2>
+                  <p>Hola,</p>
+                  <p>Recibimos una solicitud para recuperar el acceso a tu cuenta en <strong>Fantasía Íntima</strong>.</p>
+                  <p>Ingresa el siguiente código en la página para continuar con el proceso:</p>
+                  
+                  <div class="codigo">{codigo_obj.codigo}</div>
+                  
+                  <p>Este código estará disponible durante los próximos <strong>15 minutos</strong>.</p>
+                  <p>Si no solicitaste este cambio, puedes ignorar este mensaje.</p>
 
-        # Lanzar envío en background (hilo daemon)
-        try:
-            t = threading.Thread(
-                target=_enviar_email_async,
-                args=( 'Código de recuperación de contraseña', mensaje_html, settings.DEFAULT_FROM_EMAIL, email),
-                daemon=True
+                  <div class="footer">
+                    &copy; 2025 Fantasía Íntima. Todos los derechos reservados.
+                  </div>
+                </div>
+              </body>
+            </html>
+            """
+
+            send_mail(
+                asunto,
+                '',  
+                'store.fantasia.intima@gmail.com',
+                [email],
+                fail_silently=False,
+                html_message=mensaje_html  # Aquí enviamos el mensaje 
             )
-            t.start()
-            logger.info("Hilo de envío iniciado para %s", email)
-        except Exception:
-            logger.exception("No se pudo iniciar hilo de envío para %s", email)
-            messages.warning(request, 'Hubo un problema al enviar el correo. Intenta más tarde.')
-
-        # Guardar en sesión y redirigir inmediatamente
-        request.session['email_recuperacion'] = email
-        messages.success(request, 'Se ha enviado un código de verificación a tu correo (revisa spam).')
-        return redirect('verificar_codigo')
-
+            
+            request.session['email_recuperacion'] = email
+            messages.success(request, 'Se ha enviado un código de verificación a tu correo.')
+            return redirect('verificar_codigo')
+        
+        except usuario.DoesNotExist:
+            messages.error(request, 'No existe una cuenta asociada a ese correo.')
+    
     return render(request, 'login/recuperarcontraseña.html')
-
 
 
 def verificar_codigo(request):
@@ -543,7 +517,7 @@ def nueva_contrasena(request):
         
         try:
             user = usuario.objects.get(Correo=email)
-            user.Contrasena = make_password(password)  # Importante: hashear la nueva contraseña
+            user.Contrasena = make_password(password)  
             user.save()
             
             # Limpiar la sesión
@@ -571,24 +545,24 @@ def nuevaContraseña(request):
 #region usuarios
 def insertarusuario(request):
     if request.method == "POST":
-        # Validar que todos los campos requeridos estén presentes
+  
         campos = ['PrimerNombre', 'OtrosNombres', 'PrimerApellido', 'SegundoApellido', 'Correo', 'NombreUsuario', 'Contrasena']
         if all(request.POST.get(campo) for campo in campos):
             correo = request.POST.get('Correo')
             nombre_usuario = request.POST.get('NombreUsuario')
 
-            # Validar si el correo ya está registrado
+         
             if usuario.objects.filter(Correo=correo).exists():
                 messages.error(request, 'El correo ya está registrado en el sistema.')
                 return redirect('crudUsuarios')
 
-            # Validar si el nombre de usuario ya está registrado
+          
             if usuario.objects.filter(NombreUsuario=nombre_usuario).exists():
                 messages.error(request, 'El nombre de usuario ya está registrado en el sistema.')
                 return redirect('crudUsuarios')
 
             try:
-                rol_default = roles.objects.get(IdRol=2)  # Rol por defecto: cliente
+                rol_default = roles.objects.get(IdRol=2)  
                 nuevo_usuario = usuario(
                     PrimerNombre=request.POST.get('PrimerNombre'),
                     OtrosNombres=request.POST.get('OtrosNombres'),
@@ -641,7 +615,6 @@ def crudUsuarios(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'crud/usuarios.html', {'page_obj': page_obj})
 #endregion
-
 
 #region domiciliario
 def insertardomiciliario(request):
@@ -717,7 +690,6 @@ def crudDomiciliarios(request):
     return render(request, 'crud/domiciliarios.html', {'page_obj': page_obj})
 #endregion
 
-
 #region productos
 def validar_nombre_producto(nombre):
     if not nombre or not nombre.strip():
@@ -735,7 +707,7 @@ def insertarproducto(request):
         id_subcategoria = request.POST.get('IdSubCategoria')
         img = request.FILES.get('Img')
 
-        # Validaciones
+
         error = validar_nombre_producto(nombre)
         if error:
             messages.error(request, error)
@@ -743,12 +715,11 @@ def insertarproducto(request):
         if not id_subcategoria:
             messages.error(request, "La subcategoría es obligatoria.")
             return redirect('crudProductos')
-        # Duplicado: mismo nombre y subcategoría
+        
         if producto.objects.filter(Nombre__iexact=nombre, IdSubCategoria_id=id_subcategoria).exists():
             messages.error(request, "Ya existe un producto con ese nombre en la misma subcategoría.")
             return redirect('crudProductos')
 
-        # Crear producto
         nuevo_producto = producto(
             Nombre=nombre,
             Descripcion=descripcion,
@@ -773,7 +744,7 @@ def editarproducto(request, id_producto):
         id_subcategoria = request.POST.get('IdSubCategoria')
         img = request.FILES.get('Img')
 
-        # Validaciones
+       
         error = validar_nombre_producto(nombre)
         if error:
             messages.error(request, error)
@@ -781,7 +752,7 @@ def editarproducto(request, id_producto):
         if not id_subcategoria:
             messages.error(request, "La subcategoría es obligatoria.")
             return redirect(f'{reverse("crudProductos")}?page={page}')
-        # Duplicado: mismo nombre y subcategoría, excluyendo el actual
+        
         if producto.objects.filter(
             Nombre__iexact=nombre,
             IdSubCategoria_id=id_subcategoria
@@ -789,7 +760,7 @@ def editarproducto(request, id_producto):
             messages.error(request, "Ya existe un producto con ese nombre en la misma subcategoría.")
             return redirect(f'{reverse("crudProductos")}?page={page}')
 
-        # Actualizar producto
+       
         producto_obj.Nombre = nombre
         producto_obj.Descripcion = descripcion
         producto_obj.Precio = precio
@@ -831,7 +802,7 @@ def guardar_calificacion(request):
         data = json.loads(request.body.decode('utf-8'))
 
         id_producto = data.get('id_producto')
-        calificacion = data.get('calificacion')  # ⚠ debe coincidir con JS
+        calificacion = data.get('calificacion')  
 
         if not id_producto or not calificacion:
             return JsonResponse({'success': False, 'mensaje': 'Faltan datos'})
@@ -840,13 +811,13 @@ def guardar_calificacion(request):
         if not producto_obj:
             return JsonResponse({'success': False, 'mensaje': 'Producto no encontrado'})
 
-        # Guardar calificación
+        
         Calificacion.objects.create(
             IdProducto=producto_obj,
             Calificacion=int(calificacion)
         )
 
-        # Calcular promedio
+        
         from django.db.models import Avg
         promedio = Calificacion.objects.filter(IdProducto=producto_obj).aggregate(
             Avg('Calificacion')
@@ -876,9 +847,9 @@ def perfiles(request):
         user = usuario.objects.get(IdUsuario=request.session['user_id'])
         
         if request.method == 'POST':
-            # Verificar si es una actualización de datos o solo de imagen
+            
             if 'profile-pic' in request.FILES:
-                # Solo actualizar imagen
+                
                 user.imagen_perfil = request.FILES['profile-pic']
                 user.save()
                 return JsonResponse({
@@ -886,7 +857,7 @@ def perfiles(request):
                     'new_image_url': user.imagen_perfil.url if user.imagen_perfil else '/static/img/perfil.png'
                 })
             else:
-                # Actualizar datos del perfil
+                
                 user.PrimerNombre = request.POST.get('primerNombre', user.PrimerNombre)
                 user.OtrosNombres = request.POST.get('segundoNombre', user.OtrosNombres)
                 user.PrimerApellido = request.POST.get('primerApellido', user.PrimerApellido)
@@ -928,7 +899,7 @@ def eliminar_cuenta(request):
     if request.method == 'POST' and request.session.get('user_id'):
         try:
             user = usuario.objects.get(IdUsuario=request.session['user_id'])
-            user.delete()  # Delete the user account
+            user.delete()  
             request.session.flush() 
             return redirect('Ladingpage')  
         except usuario.DoesNotExist:
@@ -971,31 +942,30 @@ def vibradores(request):
     })
 
 
-from django.db.models import Avg, Count
 
 def disfraces(request):
     categorias = categoria.objects.all()
-    user_id = request.session.get('user_id')  # Obtener ID del usuario logueado
+    user_id = request.session.get('user_id')  
     
     productos = producto.objects.filter(
         IdSubCategoria__categoria__NombreCategoria='Disfraces'
     ).annotate(
-        rating=Avg('calificacion__Calificacion'),  # Promedio de calificaciones (relación inversa)
-        review_count=Count('calificacion')  # Conteo de calificaciones
+        rating=Avg('calificacion__Calificacion'),  
+        review_count=Count('calificacion')  
     ).order_by('-IdProducto')
     
-    # Asignar user_rating a cada producto (un solo loop, optimizado)
-    for prod in productos:  # 👈 Cambiado: 'prod' en lugar de 'producto' para evitar shadowing
-        prod.user_rating = 0  # Valor por defecto (vacío/no calificado)
+    
+    for prod in productos:  
+        prod.user_rating = 0  
         if user_id:
             try:
                 user_calif = Calificacion.objects.get(
-                    IdProducto=prod,  # 👈 Usar 'prod'
+                    IdProducto=prod,  
                     IdUsuario_id=user_id
                 )
-                prod.user_rating = user_calif.Calificacion  # e.g., 3
+                prod.user_rating = user_calif.Calificacion  
             except Calificacion.DoesNotExist:
-                prod.user_rating = 0  # No ha calificado
+                prod.user_rating = 0  
     
     pendientes = 0
     if request.session.get('role') == 1:
@@ -1024,6 +994,7 @@ def dildos(request):
         'pendientes': pendientes,  
     })
 
+
 def productosCarrito(request):
     categorias = categoria.objects.all()
     productos = producto.objects.all().order_by('-IdProducto')
@@ -1049,7 +1020,7 @@ def productosCarrito(request):
 
 #region notificaciones
 def lista_notificaciones(request):
-    # Traer todas las notificaciones
+ 
     notificaciones = Notificacion.objects.all().order_by('-fecha')
     pendientes = Notificacion.objects.filter(leida=False).count()
 
@@ -1058,7 +1029,48 @@ def lista_notificaciones(request):
         'pendientes': pendientes, 
     })
 
-from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def actualizar_stock(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'mensaje': 'Método no permitido'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+
+        carrito = data.get('carrito')
+        if carrito:
+            nuevo_stocks = []
+            with transaction.atomic():
+                productos_map = {}
+                for item in carrito:
+                    pid = item.get('id_producto') or item.get('IdProducto')
+                    cantidad = int(item.get('cantidad', 1))
+                    prod = producto.objects.select_for_update().get(IdProducto=pid)
+                    if prod.Cantidad < cantidad:
+                        return JsonResponse({'success': False, 'mensaje': f'Stock insuficiente de {prod.Nombre}', 'id_producto': pid}, status=400)
+                    productos_map[pid] = (prod, cantidad)
+
+                for pid, (prod, cantidad) in productos_map.items():
+                    prod.Cantidad -= cantidad
+                    prod.save()
+                    nuevo_stocks.append({'id_producto': pid, 'nuevo_stock': prod.Cantidad})
+
+                    if prod.Cantidad == 0:
+                        admin = usuario.objects.filter(idRol__IdRol=1).first()
+                        if admin:
+                            Notificacion.objects.create(
+                                administrador=admin,
+                                titulo="Producto agotado",
+                                mensaje=f"El producto '{prod.Nombre}' se ha agotado."
+                            )
+            return JsonResponse({'success': True, 'nuevo_stocks': nuevo_stocks})
+    except Exception as e:
+        
+        return JsonResponse({'success': False, 'mensaje': str(e)}, status=500)
+
+        
+   
 
 @csrf_exempt
 def marcar_leida(request, id_notificacion):
@@ -1082,24 +1094,42 @@ def marcar_leida(request, id_notificacion):
 @csrf_exempt
 def agregar_al_carrito(request, producto_id):
     if request.method == "POST":
-        producto = producto.objects.get(pk=producto_id)
-        if producto.Cantidad > 0:
-            producto.Cantidad -= 1
-            producto.save()
+        user_id = request.session.get("user_id")
+        if not user_id:
+            return JsonResponse({"success": False, "error": "Usuario no autenticado"}, status=403)
 
-            carrito = request.session.get("carrito", {})
-            carrito[str(producto_id)] = carrito.get(str(producto_id), 0) + 1
-            request.session["carrito"] = carrito
+        try:
+            prod = producto.objects.get(pk=producto_id)
+        except producto.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Producto no existe"}, status=404)
 
-            total_items = sum(carrito.values())
+        if prod.Cantidad <= 0:
+            return JsonResponse({"success": False, "error": "Sin stock"})
 
-            return JsonResponse({
-                "success": True,
-                "total_items": total_items,
-                "stock_restante": producto.Cantidad
-            })
+        
+        item, created = CarritoCompras.objects.get_or_create(
+            UsuarioId_id=user_id,
+            ProductoId=prod,
+            defaults={"Cantidad": 1, "PrecioUnitario": prod.Precio}
+        )
 
-        return JsonResponse({"success": False, "error": "Sin stock"})
+        if not created:
+            item.Cantidad += 1
+            item.save()
+
+        
+        total_items = CarritoCompras.objects.filter(UsuarioId_id=user_id).aggregate(total=models.Sum("Cantidad"))["total"] or 0
+
+        return JsonResponse({
+            "success": True,
+            "total_items": total_items,
+            "stock_disponible": prod.Cantidad  
+        })
+
+    return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+
+def carrito(request):
+    return render(request, 'carrito/carrito.html') 
 #endregion
 
 #region pasarela de pago
@@ -1119,7 +1149,7 @@ def registrar_pago(request):
             fecha_pedido = now().date()
             fecha_entrega = fecha_pedido 
 
-            # Crear historial del pedido
+            
             historial = HistorialPedido.objects.create(
                 Cliente=request.user,
                 Nombre=nombre,
@@ -1132,12 +1162,12 @@ def registrar_pago(request):
                 Estado="En proceso"
             )
 
-            # Guardar detalles y controlar stock
+            
             for item in carrito:
                 try:
                     prod = producto.objects.get(pk=item['IdProducto'])
                     
-                    # Crear detalle del pedido
+                    
                     HistorialPedidoDetalle.objects.create(
                         HistorialId=historial,
                         ProductoId=prod,
@@ -1145,11 +1175,11 @@ def registrar_pago(request):
                         PrecioUnitario=prod.Precio
                     )
 
-                    # Reducir stock
+                    
                     prod.Stock -= item['cantidad']
                     prod.save()
 
-                    # Crear notificación si se queda sin stock
+                    
                     if prod.Stock <= 0:
                         Notificacion.objects.create(
                             titulo=f"Producto sin stock: {prod.Nombre}",
@@ -1160,7 +1190,7 @@ def registrar_pago(request):
                 except producto.DoesNotExist:
                     continue
 
-            # 🔹 Vaciar carrito de la sesión
+            
             request.session['carrito'] = {}
             request.session.modified = True
 
@@ -1182,7 +1212,7 @@ def registrar_pago(request):
     }, status=405)
 
 def pago_paypal(request):
-    # Datos básicos de la transacción
+    
     paypal_dict = {
         "business": settings.PAYPAL_RECEIVER_EMAIL,
         "amount": "20.00",
@@ -1204,27 +1234,75 @@ def pago_exitoso(request):
 
     try:
         with transaction.atomic():
-            pedido = HistorialPedido.objects.get(CodigoPedido=codigo_pedido)
+            
+            pedido = HistorialPedido.objects.select_for_update().get(CodigoPedido=codigo_pedido)
             pedido.Estado = "Solicitado"
             pedido.save()
 
-            # Descontar stock (por si no lo hiciste en pago_paypal_carrito)
-            detalles = HistorialPedidoDetalle.objects.filter(HistorialId=pedido)
-            for detalle in detalles:
-                if detalle.ProductoId.Cantidad >= detalle.Cantidad:
-                    detalle.ProductoId.Cantidad -= detalle.Cantidad
-                    detalle.ProductoId.save()
+            
+            user_id = request.session.get('user_id')
+            user_obj = None
+            if user_id:
+                try:
+                    user_obj = usuario.objects.get(IdUsuario=user_id)
+                except usuario.DoesNotExist:
+                    user_obj = pedido.UsuarioId
+            else:
+                user_obj = pedido.UsuarioId
 
-        # 🔥 limpiar carrito y el código de pedido de la sesión
-        request.session.pop('carrito', None)
-        request.session.pop('ultimo_pedido_codigo', None)
-        request.session.modified = True
+            
+            detalles_qs = HistorialPedidoDetalle.objects.filter(HistorialId=pedido).select_related('ProductoId')
+            if not detalles_qs.exists() and user_obj:
+                carrito_items = CarritoCompras.objects.filter(
+                    UsuarioId=user_obj,
+                    CodigoPedido__isnull=True
+                ).select_related('ProductoId')
 
-        # Mensaje de confirmación
+                for item in carrito_items:
+                    HistorialPedidoDetalle.objects.create(
+                        HistorialId=pedido,
+                        ProductoId=item.ProductoId,
+                        Cantidad=item.Cantidad,
+                        PrecioUnitario=item.PrecioUnitario
+                    )
+
+                
+                detalles_qs = HistorialPedidoDetalle.objects.filter(HistorialId=pedido).select_related('ProductoId')
+
+            
+            for detalle in detalles_qs:
+                prod = detalle.ProductoId
+                if not prod:
+                    continue
+                
+                if prod.Cantidad >= detalle.Cantidad:
+                    prod.Cantidad -= detalle.Cantidad
+                    prod.save()
+
+                    
+                    if prod.Cantidad == 0:
+                        Notificacion.objects.create(
+                            titulo=f"Producto agotado: {prod.Nombre}",
+                            mensaje=f"El producto '{prod.Nombre}' se quedó sin stock."
+                        )
+                
+
+            
+            if user_obj:
+                CarritoCompras.objects.filter(UsuarioId=user_obj, CodigoPedido__isnull=True).delete()
+
+            
+            request.session.pop('carrito', None)
+            request.session.pop('ultimo_pedido_codigo', None)
+            request.session['clear_cart'] = True
+            request.session.modified = True
+
+        
         messages.success(request, "✅ ¡Tu compra fue registrada con éxito! Puedes ver los detalles en tu historial.")
         return redirect('pedido')
 
     except HistorialPedido.DoesNotExist:
+        
         return redirect("Ladingpage")
 
 def pago_cancelado(request):
@@ -1233,30 +1311,29 @@ def pago_cancelado(request):
 @csrf_exempt
 def obtener_carrito_usuario(request):
     if request.method == 'GET':
+        user_id = request.session.get('user_id')
+        if not user_id:
+            return JsonResponse({'carrito': []})  
+
         try:
-            carrito_session = request.session.get('carrito', {})
-            carrito_list = []
-            for prod_id_str, cantidad in carrito_session.items():
-                try:
-                    prod_id = int(prod_id_str)
-                    prod = producto.objects.get(IdProducto=prod_id)
-                    carrito_list.append({
-                        'IdProducto': prod.IdProducto,
-                        'nombre': prod.Nombre,
-                        'precio': float(prod.Precio),  
-                        'cantidad': int(cantidad),
-                    })
-                except (ValueError, producto.DoesNotExist):
-                    logger.warning(f"Producto {prod_id_str} no encontrado en carrito")
-                    continue
-            
-            logger.info(f"Carrito enviado: {len(carrito_list)} items")
+            carrito = CarritoCompras.objects.filter(UsuarioId_id=user_id).select_related("ProductoId")
+            carrito_list = [
+                {
+                    'IdProducto': item.ProductoId.IdProducto,
+                    'nombre': item.ProductoId.Nombre,
+                    'precio': float(item.PrecioUnitario),
+                    'cantidad': item.Cantidad,
+                    'stock': item.ProductoId.Cantidad,
+                    'imagen': item.ProductoId.Img.url if item.ProductoId.Img else ""
+                }
+                for item in carrito
+            ]
+
             return JsonResponse({'carrito': carrito_list})
         except Exception as e:
-            logger.error(f"Error al obtener carrito: {e}")
             return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Solo GET permitido'}, status=405)
 
+    return JsonResponse({'error': 'Solo GET permitido'}, status=405)
 
 logger = logging.getLogger(__name__)
 @csrf_exempt
@@ -1270,11 +1347,11 @@ def pago_paypal_carrito(request):
             if not carrito or not total:
                 return JsonResponse({"error": "Carrito vacío o total no enviado"}, status=400)
 
-            # 🔑 Usuario autenticado
+            
             user_id = request.session.get('user_id')
             usuario_obj = usuario.objects.get(IdUsuario=user_id) if user_id else None
 
-            # ✅ Crear pedido en BD con estado "Pendiente de pago"
+           
             codigo_pedido = f"PP-{datetime.now().strftime('%Y%m%d%H%M%S')}"
             with transaction.atomic():
                 pedido = HistorialPedido.objects.create(
@@ -1304,11 +1381,11 @@ def pago_paypal_carrito(request):
                     except producto.DoesNotExist:
                         continue
 
-            # Guardar el código del pedido en la sesión para recuperarlo en pago_exitoso
+            
             request.session['ultimo_pedido_codigo'] = codigo_pedido
             request.session.modified = True
 
-            # ✅ Generar formulario de PayPal
+            
             paypal_dict = {
                 "business": settings.PAYPAL_RECEIVER_EMAIL,
                 "amount": f"{float(total):.2f}",
@@ -1345,7 +1422,6 @@ def detalles_pedido(request, codigo_pedido):
                 'correo': pedido.Correo,
                 'telefono': pedido.Telefono,
                 'direccion': pedido.Direccion,
-                # ✅ Si existe fecha_entrega, la formateamos, si no, devolvemos un string vacío
                 'fecha_entrega': pedido.FechaEntrega.strftime('%Y-%m-%d') if pedido.FechaEntrega else '',
                 'fecha': pedido.Fecha.strftime('%Y-%m-%d'),
                 'total': float(pedido.Total),
@@ -1396,7 +1472,15 @@ def pedido(request):
             'fecha': p.Fecha,
             'estado': p.Estado,
         })
-    return render(request, 'pedido.html', {'pedidos': pedidos})
+
+   
+    clear_cart = request.session.pop('clear_cart', False)
+
+    return render(request, 'pedido.html', {
+        'pedidos': pedidos,
+        'clear_cart': clear_cart,
+    })
+
 
 def productos_por_pedido_view(request, pedido_id):
     detalles = HistorialPedidoDetalle.objects.filter(HistorialId=pedido_id)
@@ -1433,7 +1517,7 @@ def cancelar_pedido(request, codigo_pedido):
 @transaction.atomic
 def cambiar_estado_pedido(request, codigo_pedido):
     try:
-        # Get user role and ID from session
+        
         role = request.session.get('role')
         user_id = request.session.get('user_id')
         try:
@@ -1441,11 +1525,11 @@ def cambiar_estado_pedido(request, codigo_pedido):
         except (ValueError, TypeError):
             return JsonResponse({'success': False, 'error': 'Permisos inválidos'}, status=403)
 
-        # Check permissions (only admin)
+        
         if not user_id or role_int != 1:
             return JsonResponse({'success': False, 'error': 'No tienes permisos para realizar esta acción'}, status=403)
 
-        # Parse JSON body
+        
         try:
             data = json.loads(request.body)
         except json.JSONDecodeError:
@@ -1455,7 +1539,7 @@ def cambiar_estado_pedido(request, codigo_pedido):
         if not nuevo_estado or nuevo_estado not in ['Aprobado', 'Cancelado', 'Enviado', 'Entregado']:
             return JsonResponse({'success': False, 'error': 'Estado no válido'}, status=400)
 
-        # Update the state in the database
+        
         try:
             pedido = HistorialPedido.objects.get(CodigoPedido=codigo_pedido)
             pedido.Estado = nuevo_estado
@@ -1515,13 +1599,14 @@ def productos_por_subcategoria(request, id_subcategoria):
     categorias = categoria.objects.all().prefetch_related('subcategoria_set')
     subcat = get_object_or_404(subcategoria, IdSubCategoria=id_subcategoria)
     productos = producto.objects.filter(IdSubCategoria=subcat).order_by('-IdProducto')
+    pendientes = Notificacion.objects.filter(leida=False).count()
 
     return render(request, "productos_subcategoria.html", {
         'categorias': categorias,
         "subcategoria": subcat,
-        "productos": productos
+        "productos": productos,
+        'pendientes': pendientes,
     })
 #endregion
 
-def carrito(request):
-    return render(request, 'carrito/carrito.html')
+

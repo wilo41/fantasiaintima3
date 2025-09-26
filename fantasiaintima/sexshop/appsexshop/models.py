@@ -126,14 +126,12 @@ class Notificacion(models.Model):
     mensaje = models.TextField()
     leida = models.BooleanField(default=False)
     fecha = models.DateTimeField(auto_now_add=True)
-    administrador = models.ForeignKey('usuario', on_delete=models.CASCADE, db_column='IdUsuario')
 
     class Meta:
         db_table = 'notificacion'
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.titulo} ({'Leída' if self.leida else 'No leída'})"
-    
 
 class CarritoCompras(models.Model):
     Id = models.AutoField(primary_key=True)

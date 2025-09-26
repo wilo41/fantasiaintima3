@@ -296,3 +296,6 @@ searchInput.addEventListener('input', () => {
   const mensaje = document.getElementById('noResultsMessage');
   mensaje.classList.toggle('d-none', encontrados > 0);
     });
+window.addEventListener("storage", () => {
+  actualizarIconoCarrito();
+});

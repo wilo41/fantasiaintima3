@@ -1,3 +1,4 @@
+{% load tz %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -60,7 +61,10 @@
           <div class="ms-2 me-auto">
             <div class="fw-bold">{{ n.titulo }}</div>
             <small>{{ n.mensaje }}</small><br>
-            <small class="text-muted"><i class="bi bi-clock"></i> {{ n.fecha|date:"d/m/Y H:i" }}</small>
+            <small class="text-muted">
+  <i class="bi bi-clock"></i> {{ n.fecha|localtime|date:"d/m/Y H:i" }}
+</small>
+
           </div>
           <div class="text-end">
             {% if not n.leida %}
